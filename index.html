@@ -6,7 +6,7 @@
     <title>StoicCAD | Police Dispatch System</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.0.3/dist/tailwind.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css">
-    <script defer src="config/config.js"></script> <!-- Include the config script with defer to ensure it loads after the HTML is parsed -->
+    <script defer src="Stoic/cad/config.js"></script> <!-- Include the config script with defer to ensure it loads after the HTML is parsed -->
 </head>
 <body class="bg-gray-800 text-white font-sans">
 
@@ -21,20 +21,23 @@
         </div>
     </header>
 
-    <!-- Main Content Area -->
-    <div class="text-center p-8 border border-gray-700 rounded-lg bg-gray-900 shadow-lg mt-6 mx-auto max-w-4xl">
-        <h1 class="text-3xl mb-2 font-bold uppercase tracking-widest" id="mainTitle"></h1>
-        <i class="fa-4x mb-3" id="mainIcon"></i>
-        <p class="mb-4 text-lg font-light" id="descriptionText"></p>
-        <div class="flex justify-center space-x-4">
-		<a href="login.php" class="text-white font-bold py-2 px-4 rounded transition duration-300">
-		    <button id="cadLoginButton">Login to CAD</button>
-		</a>
-		<a href="homepage.html" class="text-white font-bold py-2 px-4 rounded transition duration-300">
-		    <button id="homeButton">Return to Homepage</button>
-		</a>
-        </div>
+<!-- Main Content Area -->
+<div class="text-center p-8 border border-gray-700 rounded-lg bg-gray-900 shadow-lg mt-6 mx-auto max-w-4xl">
+    <h1 class="text-3xl mb-2 font-bold uppercase tracking-widest" id="mainTitle"></h1>
+    <i class="fa-4x mb-3" id="mainIcon"></i>
+    <div class="flex justify-center">
+        <img src="https://img.thestoicbear.dev/images/Stoic-2024-05-08_23-57-50-663c117ecd496.png" alt="StoicCAD Logo" class="h-32 mx-auto"> <!-- Logo here -->
     </div>
+    <p class="mb-4 text-lg font-light" id="descriptionText"></p>
+    <div class="flex justify-center space-x-4">
+        <a href="login.php" class="text-white font-bold py-2 px-4 rounded transition duration-300">
+            <button id="cadLoginButton">Login to CAD</button>
+        </a>
+        <a href="homepage.html" class="text-white font-bold py-2 px-4 rounded transition duration-300">
+            <button id="homeButton">Return to Homepage</button>
+        </a>
+    </div>
+</div>
 
 	<!-- Info Cards Section -->
 	<div class="container mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 p-4">
@@ -51,4 +54,69 @@
 
 
 </body>
+<script>
+    // config.js
+const config = {
+    logo: "http://img.thestoicbear.dev/images/Stoic-2024-05-08_23-57-50-663c117ecd496.png",
+    buttonColor: "bg-blue-800",
+    buttonHoverColor: "hover:bg-blue-700",
+    textColor: "text-blue-300",
+    iconClass: "fas fa-broadcast-tower",
+    titleText: "StoicCAD Dispatch System",
+    descriptionText: "Advanced dispatch solution designed to enhance operational efficiency and response times.",
+    cards: [
+        {
+            id: "infoCard1",
+            title: "Latest Dispatch Tools",
+            visible: false
+        },
+        {
+            id: "infoCard2",
+            title: "Self Hosted",
+            visible: false
+        },
+        {
+            id: "infoCard3",
+            title: "Open Source",
+            visible: false
+        }
+    ]
+};
+
+function applyConfig() {
+    document.getElementById('logo').src = config.logo;
+    document.getElementById('mainTitle').textContent = config.titleText;
+    document.getElementById('mainTitle').className += ` ${config.textColor}`;
+    document.getElementById('descriptionText').textContent = config.descriptionText;
+    document.getElementById('mainIcon').className = config.iconClass + " fa-4x mb-3";
+
+    document.querySelectorAll('button').forEach(button => {
+        button.className += ` ${config.buttonColor} ${config.buttonHoverColor}`;
+    });
+
+    config.cards.forEach(card => {
+        const element = document.getElementById(card.id);
+        element.querySelector('div').textContent = card.title;
+        if (card.visible) {
+            element.classList.remove('hidden');
+        } else {
+            element.classList.add('hidden');
+        }
+    });
+}
+
+document.addEventListener('DOMContentLoaded', applyConfig);
+function toggleInfoCards() {
+    ['infoCard1', 'infoCard2', 'infoCard3'].forEach(cardId => {
+        const card = document.getElementById(cardId);
+        card.classList.toggle('hidden');
+    });
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    applyConfig();
+    document.getElementById('toggleInfoButton').addEventListener('click', toggleInfoCards);
+});
+
+</script>
 </html>
