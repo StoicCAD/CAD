@@ -8,8 +8,8 @@
         exit();
     }
 
-    // Fetch detailed user information including dept, rank, and badge number
-    $stmt = $conn->prepare("SELECT username, avatar_url, dept, rank, badge_number, super FROM users WHERE id = ?");
+    // User verification
+    $stmt = $conn->prepare("SELECT username, avatar_url, dept, rank, badge_number, super FROM cadusers WHERE id = ?");
     $stmt->execute([$_SESSION['user_id']]);
     $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -34,7 +34,7 @@
     }
 
     // Fetch all users in the same department as the logged-in super user
-    $deptUsersStmt = $conn->prepare("SELECT id, username, email, avatar_url, dept, rank, badge_number, super FROM users WHERE dept = ?");
+    $deptUsersStmt = $conn->prepare("SELECT id, username, email, avatar_url, dept, rank, badge_number, super FROM cadusers WHERE dept = ?");
     $deptUsersStmt->execute([$user['dept']]);
     $deptUsers = $deptUsersStmt->fetchAll(PDO::FETCH_ASSOC);
 
@@ -56,8 +56,17 @@
             background-repeat: no-repeat;
             background-attachment: fixed;
         }
+        .dropdown-menu {
+            display: none;
+            position: absolute;
+            left: 0;
+            z-index: 1000;
+            width: 100%;
+            background: #4b5563; /* Matching Tailwind's gray-700 */
+            border-radius: 0 0 0.5rem 0.5rem;
+        }
         .sidebar {
-            transition: transform 0.3s ease-out;
+            transition: transform 1.3s ease-out;
             transform: translateX(0);
             z-index: 10;
         }
@@ -71,7 +80,7 @@
             z-index: 20;
         }
         .content {
-            transition: margin-left 0.9s ease-out;
+            transition: margin-left 1.4s ease-out;
             margin-right: 120px; /* match sidebar width when visible */
         }
         .full-width {
@@ -82,18 +91,24 @@
 <body class="font-sans antialiased text-white">
     <div class="flex min-h-screen">
         <!-- Toggle Button -->
-        <button onclick="toggleSidebar()" class="sidebar-button text-white text-xl bg-gray-800 px-4 py-2 rounded">&#9776; Toggle</button>
+        <button onclick="toggleSidebar()" class="sidebar-button text-white text-xl bg-gray-800 px-4 py-2 rounded">&#9776;</button>
         
         <!-- Sidebar -->
         <div id="sidebar" class="bg-gray-800 w-64 space-y-6 py-7 px-2 fixed inset-y-0 left-0 overflow-y-auto sidebar">
             <div class="text-center">
-                <img src="<?php echo htmlspecialchars($user['avatar_url']); ?>" alt="User Avatar" class="h-20 w-20 rounded-full mx-auto">
-                <h2 class="mt-4 mb-2 font-semibold"><?php echo htmlspecialchars($user['username']); ?></h2>
-                <p><?php echo htmlspecialchars($user['dept']); ?>, <?php echo htmlspecialchars($user['rank']); ?><br>Badge #<?php echo htmlspecialchars($user['badge_number']); ?></p>
+                <!-- Ensure values are not null before using htmlspecialchars -->
+                <img src="<?php echo htmlspecialchars($user['avatar_url'] ?? 'default_avatar.png'); ?>" alt="User Avatar" class="h-20 w-20 rounded-full mx-auto">
+                <h2 class="mt-4 mb-2 font-semibold"><?php echo htmlspecialchars($user['username'] ?? 'Unknown User'); ?></h2>
+                <p>
+                    <?php echo htmlspecialchars($user['dept'] ?? 'No Department'); ?>, 
+                    <?php echo htmlspecialchars($user['rank'] ?? 'No Rank'); ?><br>
+                    Badge #<?php echo htmlspecialchars($user['badge_number'] ?? 'No Badge'); ?>
+                </p>
             </div>
+
             <nav>
                 <a href="dashboard.php" class="block py-2.5 px-4 rounded hover:bg-blue-600"><i class="fas fa-home mr-2"></i>Dashboard</a>
-                <a href="incidents.php" class="block py-2.5 px-4 rounded hover:bg-blue-600"><i class="fas fa-exclamation-triangle mr-2"></i>Incidents</a>
+                <a href="incidents.php" class="block py-2.5 px-4 rounded hover:bg-blue-600"><i class="fas fa-exclamation-triangle mr-2"></i>Active Calls</a>
                 <a href="reports.php" class="block py-2.5 px-4 rounded hover:bg-blue-600"><i class="fas fa-file-alt mr-2"></i>Reports</a>
                 <a href="map.php" class="block py-2.5 px-4 rounded hover:bg-blue-600"><i class="fas fa-map-marked-alt mr-2"></i>Map</a>
                 <!-- Dropdown for Searches -->
@@ -104,13 +119,16 @@
                         <a href="vehicle_search.php" class="block py-2 px-4 text-sm text-white hover:bg-gray-600">Vehicles</a>
                     </div>
                 </div>
+
                 <a href="settings.php" class="block py-2.5 px-4 rounded hover:bg-blue-600"><i class="fas fa-cog mr-2"></i>Settings</a>
                 <?php if ($user['rank'] == 'Admin'): ?>
                     <a href="a-dash.php" class="block py-2.5 px-4 rounded hover:bg-blue-600"><i class="fas fa-user-shield mr-2"></i>Admin Dashboard</a>
                 <?php endif; ?>
+
                 <?php if ($user['super'] == 1): ?>
                     <a href="super-dashboard.php" class="block py-2.5 px-4 rounded hover:bg-blue-600"><i class="fas fa-user-shield mr-2"></i>Supervisor Dashboard</a>
                 <?php endif; ?>
+                
                 <form method="post" action="logout.php" class="mt-5">
                     <button type="submit" name="logout" class="w-full py-2 bg-red-600 text-white rounded hover:bg-red-700 focus:outline-none">
                         <i class="fas fa-sign-out-alt mr-2"></i> Logout
@@ -118,7 +136,7 @@
                 </form>
             </nav>
         </div>
-
+        <div>
         <!-- Main Content -->
         <!-- Main Content -->
         <div id="mainContent" class="flex-1 flex flex-col ml-64 p-10 content">
@@ -156,7 +174,7 @@
                                 <td class="px-5 py-2 border-b border-gray-700 text-sm"><?php echo htmlspecialchars($deptUser['badge_number']); ?></td>
                                 <td class="px-5 py-2 border-b border-gray-700 text-sm"><?php echo $deptUser['super'] ? 'Yes' : 'No'; ?></td>
                                 <td class="px-5 py-2 border-b border-gray-700 text-sm">
-                                    <a href="edit_user.php?user_id=<?php echo $deptUser['id']; ?>" class="text-blue-500 hover:text-blue-400">Edit</a>
+                                    <a href="edits/edit_user.php?user_id=<?php echo $deptUser['id']; ?>" class="text-blue-500 hover:text-blue-400">Edit</a>
                                 </td>
                             </tr>
                             <?php endforeach; ?>
@@ -168,12 +186,30 @@
     </div>
     </div>
     <script>
+
         function toggleSidebar() {
             var sidebar = document.getElementById("sidebar");
             var mainContent = document.getElementById("mainContent");
             sidebar.classList.toggle("hidden-sidebar");
             mainContent.classList.toggle("full-width");
         }
+        // JavaScript to handle dropdown behavior
+        document.addEventListener('DOMContentLoaded', function () {
+            const dropdown = document.querySelector('.dropdown');
+            const dropdownMenu = document.querySelector('.dropdown-menu');
+
+            dropdown.addEventListener('click', function (event) {
+                event.stopPropagation();
+                dropdownMenu.style.display = dropdownMenu.style.display === 'block' ? 'none' : 'block';
+            });
+
+            window.addEventListener('click', function () {
+                if (dropdownMenu.style.display === 'block') {
+                    dropdownMenu.style.display = 'none';
+                }
+            });
+        });
     </script>
+
 </body>
 </html>
