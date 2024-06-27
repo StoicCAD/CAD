@@ -271,7 +271,7 @@ $arrests = $conn->query("SELECT * FROM arrests")->fetchAll(PDO::FETCH_ASSOC);
                                     <?php echo htmlspecialchars($incident['status']); ?>
                                 </td>
                                 <td class="px-5 py-2 border-b border-gray-700 text-sm">
-                                <a href="edits/edit_incident.php?incident_id=<?php echo urlencode($incident['id']); ?>&title=<?php echo urlencode($incident['title']); ?>&desc=<?php echo urlencode($incident['description']); ?>&repby=<?php echo urlencode($incident['reported_by']); ?>" class="text-blue-500 hover:text-blue-400">Edit</a>
+                                 <a href="edits/edit_incident.php?incident_id=<?php echo $incident['id']; ?>?title=<?php echo $incident["title"]; ?>?desc=<?php echo $incident["description"]; ?>?stat=<?php echo $incident["status"]; ?>" class="text-blue-500 hover:text-blue-400">Edit</a>
 
                                     <form method="post" action="" style="display:inline;">
                                         <input type="hidden" name="incident_id" value="<?php echo $incident['id']; ?>">
