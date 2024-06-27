@@ -30,6 +30,7 @@
     $stmt->execute();
     $arrests = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
+    
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -39,6 +40,20 @@
     <title>All Arrests</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.0.3/dist/tailwind.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css">
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            function reloadIframe() {
+                var iframe = document.getElementById('useriframe');
+                if (iframe) {
+                    var src = iframe.src.split('?')[0]; // Get the base URL without query parameters
+                    iframe.src = src + '?t=' + new Date().getTime(); // Append a unique timestamp
+                }
+            }
+
+            // Set interval to reload iframe every second (1000 milliseconds)
+            setInterval(reloadIframe, 1000);
+        });
+    </script>
     <style>
         body {
             background-image: url('<?php echo $backgroundImage; ?>');
@@ -136,7 +151,7 @@
         <h1 class="font-bold text-3xl mb-6">Active Calls</h1>
         <div class="bg-gray-900 mt-6 p-6 rounded-lg shadow-md overflow-hidden">
             <h2 class="text-xl font-semibold mb-4">Web Content</h2>
-            <iframe src="<?php echo htmlspecialchars($iframeUrl); ?>" style="width:800px; height:500px; border:400px;"></iframe>
+            <iframe id="mapiframe" src="<?php echo htmlspecialchars($iframeUrl); ?>" style="width:800px; height:500px; border:400px;"></iframe>
         </div>
     </div>
     </div>
