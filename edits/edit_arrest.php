@@ -1,42 +1,39 @@
 <?php
-session_start();
-require_once '../config/db.php';  // Ensure this file contains your PDO connection logic
 
-if (!isset($_SESSION['user_id'])) {
-    header("Location: ../login.php");
+require_once '../config/db.php'; // Ensure this file contains your PDO connection logic
+require_once '../config/config.php'; // Ensure this file contains your PDO connection logic
+
+if (!isset($_GET['arrest_id']) || !is_numeric($_GET['arrest_id'])) {
+    echo "Invalid arrest ID.";
     exit;
 }
 
-$userId = $_GET['user_id'];  // Get the userid from the data sent with the url
-
-try {
-    // Prepare and execute the statement to fetch user data
-    $stmt = $conn->prepare("SELECT * FROM cadusers WHERE id = ?");
-    $stmt->bindParam(1, $userId, PDO::PARAM_INT);
-    $stmt->execute();
+    // Fetch detailed user information including dept, rank, and badge number
+    $stmt = $conn->prepare("SELECT username, avatar_url, dept, rank, badge_number, super FROM cadusers WHERE id = ?");
+    $stmt->execute([$_SESSION['user_id']]);
     $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
-    if (!$user) {
-        throw new Exception("User not found.");
-    }
+$arrest_id = $_GET['arrest_id'];
+$stmt = $conn->prepare("SELECT * FROM arrests WHERE arrest_id = ?");
+$stmt->bindParam(1, $arrest_id, PDO::PARAM_INT);
+$stmt->execute();
+$currentData = $stmt->fetch(PDO::FETCH_ASSOC);
 
-    // Setup data for the template
-    $currentData = $user;
+if ($currentData) {
+    $type = 'arrests';
+    $datatype = 'arrest_id';
+    $id = $arrest_id;
+    $arrestDate = new DateTime($currentData['arrest_date']);
     $fields = [
-        'username' => $user['username'],
-        'email' => $user['email'],
-        'dept' => $user['dept'] ?? '',
-        'rank' => $user['rank'] ?? '',
-        'badge_number' => $user['badge_number'] ?? ''
+        'officer_name' => $currentData['officer_name'],
+        'arrest_date' => $arrestDate->format('Y-m-d H:i:s'),  // Correctly format the date
+        'charges' => $currentData['charges'],
+        'bail_amount' => $currentData['bail_amount']
     ];
-    $type = 'cadusers';
-    $datatype = 'id';
-    $id = $userId;
 
-    // Include the generic edit template
     include 'edit_template.php';
-} catch (Exception $e) {
-    echo 'Error: ' . $e->getMessage();
+} else {
+    echo "No arrest found with this ID.";
     exit;
 }
 ?>
