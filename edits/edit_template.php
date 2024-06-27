@@ -28,12 +28,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     if (empty($errors)) {
         try {
-            $sql = "UPDATE cadusers SET " . join(', ', array_map(fn($field) => "$field = :$field", array_keys($updateValues))) . " WHERE id = :id";
+            $sql = "UPDATE " . $type . " SET " . join(', ', array_map(fn($field) => "$field = :$field", array_keys($updateValues))) . " WHERE ". $datatype ." = :id";
             $stmt = $conn->prepare($sql);
             foreach ($updateValues as $field => $value) {
                 $stmt->bindValue(":$field", $value);
             }
-            $stmt->bindValue(":id", $currentData['id']);
+            $stmt->bindValue(":id", $id);
             $stmt->execute();
             echo "<p>Record updated successfully.</p>";
         } catch (PDOException $e) {
