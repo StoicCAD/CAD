@@ -7,13 +7,13 @@ require_once '../config/db.php';
 // If department is not CIV, continue on dashboard.php
 require_once '../config/dept_style_config.php'; // Include the department style configurations
 // Fetch detailed user information including dept, rank, and badge number
-$stmt = $conn->prepare("SELECT username, avatar_url, dept, rank, badge_number, super FROM cadusers WHERE id = ?");
+$stmt = $conn->prepare("SELECT username, avatar_url, dept, rank, badge_number, super FROM users WHERE id = ?");
 $stmt->execute([$_SESSION['user_id']]);
 $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
 // Check if the form was submitted
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    require_once '../config/db.php';  // Ensure your database connection file is correct
+    require_once '../db.php';  // Ensure your database connection file is correct
     $errors = [];
     $updateValues = [];
 
@@ -28,12 +28,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     if (empty($errors)) {
         try {
-            $sql = "UPDATE " . $type . " SET " . join(', ', array_map(fn($field) => "$field = :$field", array_keys($updateValues))) . " WHERE ". $datatype ." = :id";
+            $sql = "UPDATE {$type} SET " . join(', ', array_map(fn($field) => "$field = :$field", array_keys($updateValues))) . " WHERE id = :id";
             $stmt = $conn->prepare($sql);
             foreach ($updateValues as $field => $value) {
                 $stmt->bindValue(":$field", $value);
             }
-            $stmt->bindValue(":id", $id);
+            $stmt->bindValue(":id", $currentData['id']);
             $stmt->execute();
             echo "<p>Record updated successfully.</p>";
         } catch (PDOException $e) {
