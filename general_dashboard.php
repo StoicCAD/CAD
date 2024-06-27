@@ -8,7 +8,7 @@ if (!isset($_SESSION['user_id'])) {
 }
 
 // Fetch user information
-$stmt = $conn->prepare("SELECT username, avatar_url, dept, rank, badge_number FROM users WHERE id = ?");
+$stmt = $conn->prepare("SELECT username, avatar_url, dept, rank, badge_number FROM cadusers WHERE id = ?");
 $stmt->execute([$_SESSION['user_id']]);
 $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
