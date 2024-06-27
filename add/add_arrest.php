@@ -1,4 +1,7 @@
 <?php
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
     session_start();
     require_once '../config/db.php';
 
@@ -27,8 +30,7 @@
 
 
     // Retrieve player_id from GET or POST request
-    $player_id = $_GET['player_id'] ?? ($_POST['player_id'] ?? null);
-
+    $player_id = $_GET['char_id'] ?? ($_POST['player_id'] ?? null);
     // Make sure player_id is numeric to prevent SQL Injection or other issues
     if (!is_numeric($player_id)) {
         echo "Invalid Player ID.";
@@ -41,7 +43,7 @@
         $bail_amount = $_POST['bail_amount'];
 
         // Insert data into the arrests table
-        $stmt = $conn->prepare("INSERT INTO arrests (player_id, officer_name, arrest_date, charges, bail_amount) VALUES (?, ?, ?, ?, ?)");
+        $stmt = $conn->prepare("INSERT INTO arrests (char_id, officer_name, arrest_date, charges, bail_amount) VALUES (?, ?, ?, ?, ?)");
         if ($stmt->execute([$player_id, $officer_name, $arrest_date, $charges, $bail_amount])) {
             header("Location: ../arrests.php");
             exit;
