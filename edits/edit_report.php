@@ -18,7 +18,9 @@ if (!$currentData) {
     exit;
 }
 
-$type = 'report';
+$type = 'reports';
+    $datatype = 'report_id';
+    $id = $report_id;
 $fields = [
     'author' => $currentData['author'],
     'report_content' => $currentData['report_content'],
