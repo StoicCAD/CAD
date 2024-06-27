@@ -8,7 +8,7 @@
     }
 
     // Fetch detailed user information including dept, rank, and badge number
-    $stmt = $conn->prepare("SELECT username, avatar_url, dept, rank, badge_number, super FROM users WHERE id = ?");
+    $stmt = $conn->prepare("SELECT username, avatar_url, dept, rank, badge_number, super FROM cadusers WHERE id = ?");
     $stmt->execute([$_SESSION['user_id']]);
     $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -22,20 +22,23 @@
         header("Location: general_dashboard.php"); // Redirect to general_dashboard.php if department is CIV
         exit();
     }
-    // If department is not CIV, continue on dashboard.php
-    require_once '../config/dept_style_config.php'; // Include the department style configurations
+    // Retrieve player_id from GET or POST request
+    $player_id = $_GET['player_id'] ?? ($_POST['player_id'] ?? null);
 
-    $char_id = $_GET['char_id'] ?? null; // Get char_id from URL
-
-    if ($_SERVER['REQUEST_METHOD'] == 'POST' && $char_id) {
+    // Make sure player_id is numeric to prevent SQL Injection or other issues
+    if (!is_numeric($player_id)) {
+        echo "Invalid Player ID.";
+        exit;
+    }
+    if ($_SERVER['REQUEST_METHOD'] == 'POST' && $player_id) {
         $issued_by = $_POST['issued_by'];
         $issue_date = $_POST['issue_date'];
         $violation = $_POST['violation'];
         $fine_amount = $_POST['fine_amount'];
 
-        $stmt = $conn->prepare("INSERT INTO tickets (char_id, issued_by, issue_date, violation, fine_amount) VALUES (?, ?, ?, ?, ?)");
-        if ($stmt->execute([$char_id, $issued_by, $issue_date, $violation, $fine_amount])) {
-            header("Location: tickets.php");
+        $stmt = $conn->prepare("INSERT INTO tickets (player_id, issued_by, issue_date, violation, fine_amount) VALUES (?, ?, ?, ?, ?)");
+        if ($stmt->execute([$player_id, $issued_by, $issue_date, $violation, $fine_amount])) {
+            header("Location: ../tickets.php");
             exit;
         } else {
             $error = "Failed to add ticket.";
