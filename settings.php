@@ -28,7 +28,7 @@
 
     if (isset($_POST['update'])) {
         $password = password_hash($_POST['password'], PASSWORD_DEFAULT); // Hash the new password
-        $stmt = $conn->prepare("UPDATE users SET password = ? WHERE id = ?");
+        $stmt = $conn->prepare("UPDATE cadusers SET password = ? WHERE id = ?");
         $stmt->execute([$password, $_SESSION['user_id']]);
 
         header("Location: dashboard.php");
