@@ -9,7 +9,7 @@ if (!isset($_SESSION['user_id'])) {
 }
 
 // Fetch detailed user information including dept, rank, and badge number
-$stmt = $conn->prepare("SELECT username, avatar_url, dept, rank, badge_number, super FROM users WHERE id = ?");
+$stmt = $conn->prepare("SELECT username, avatar_url, dept, rank, badge_number, super FROM cadusers WHERE id = ?");
 $stmt->execute([$_SESSION['user_id']]);
 $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -33,7 +33,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $action = $_POST['action'];
         switch ($action) {
             case 'delete_user':
-                $stmt = $conn->prepare("DELETE FROM users WHERE id = ?");
+                $stmt = $conn->prepare("DELETE FROM cadusers WHERE id = ?");
                 $stmt->execute([$_POST['user_id']]);
                 break;
             case 'edit_user':
@@ -57,7 +57,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 // Fetch all data to display
-$users = $conn->query("SELECT * FROM users")->fetchAll(PDO::FETCH_ASSOC);
+$users = $conn->query("SELECT * FROM cadusers")->fetchAll(PDO::FETCH_ASSOC);
 $incidents = $conn->query("SELECT * FROM incidents")->fetchAll(PDO::FETCH_ASSOC);
 $reports = $conn->query("SELECT * FROM reports")->fetchAll(PDO::FETCH_ASSOC);
 $tickets = $conn->query("SELECT * FROM tickets")->fetchAll(PDO::FETCH_ASSOC);
