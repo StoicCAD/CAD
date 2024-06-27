@@ -13,7 +13,7 @@ $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
 // Check if the form was submitted
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    require_once '../db.php';  // Ensure your database connection file is correct
+    require_once '../config/db.php';  // Ensure your database connection file is correct
     $errors = [];
     $updateValues = [];
 
@@ -28,7 +28,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     if (empty($errors)) {
         try {
-            $sql = "UPDATE {$type} SET " . join(', ', array_map(fn($field) => "$field = :$field", array_keys($updateValues))) . " WHERE id = :id";
+            $sql = "UPDATE cadusers SET " . join(', ', array_map(fn($field) => "$field = :$field", array_keys($updateValues))) . " WHERE id = :id";
             $stmt = $conn->prepare($sql);
             foreach ($updateValues as $field => $value) {
                 $stmt->bindValue(":$field", $value);
