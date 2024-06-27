@@ -23,7 +23,7 @@
         exit();
     }
     // Retrieve player_id from GET or POST request
-    $player_id = $_GET['player_id'] ?? ($_POST['player_id'] ?? null);
+    $player_id = $_GET['char_id'] ?? ($_POST['player_id'] ?? null);
 
     // Make sure player_id is numeric to prevent SQL Injection or other issues
     if (!is_numeric($player_id)) {
@@ -36,7 +36,7 @@
         $violation = $_POST['violation'];
         $fine_amount = $_POST['fine_amount'];
 
-        $stmt = $conn->prepare("INSERT INTO tickets (player_id, issued_by, issue_date, violation, fine_amount) VALUES (?, ?, ?, ?, ?)");
+        $stmt = $conn->prepare("INSERT INTO tickets (char_id, issued_by, issue_date, violation, fine_amount) VALUES (?, ?, ?, ?, ?)");
         if ($stmt->execute([$player_id, $issued_by, $issue_date, $violation, $fine_amount])) {
             header("Location: ../tickets.php");
             exit;
