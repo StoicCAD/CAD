@@ -7,7 +7,7 @@ require_once '../config/db.php';
 // If department is not CIV, continue on dashboard.php
 require_once '../config/dept_style_config.php'; // Include the department style configurations
 // Fetch detailed user information including dept, rank, and badge number
-$stmt = $conn->prepare("SELECT username, avatar_url, dept, rank, badge_number, super FROM users WHERE id = ?");
+$stmt = $conn->prepare("SELECT username, avatar_url, dept, rank, badge_number, super FROM cadusers WHERE id = ?");
 $stmt->execute([$_SESSION['user_id']]);
 $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
