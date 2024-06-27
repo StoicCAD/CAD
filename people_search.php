@@ -252,8 +252,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['search_query'])) {
                         </div>
                         <div class="flex items-center">
                             <a href="tickets.php" class="px-4 py-2 bg-blue-500 rounded hover:bg-blue-600 focus:outline-none">Tickets</a>
-                            <a href="add/add_ticket.php?char_id=<?php echo $row['char_id']; ?>" class="px-4 py-2 bg-blue-500 rounded hover:bg-blue-600 focus:outline-none">Add Ticket</a>
-                            <a href="add/add_arrest.php?char_id=<?php echo $row['char_id']; ?>" class="px-4 py-2 bg-red-500 rounded hover:bg-red-600 focus:outline-none">Add Arrest</a>
+                            <a href="add/add_ticket.php?char_id=<?php echo $row['userId']; ?>" class="px-4 py-2 bg-blue-500 rounded hover:bg-blue-600 focus:outline-none">Add Ticket</a>
+                            <a href="add/add_arrest.php?char_id=<?php echo $row['userId']; ?>" class="px-4 py-2 bg-red-500 rounded hover:bg-red-600 focus:outline-none">Add Arrest</a>
                         </div>
                     </div>
                 <?php endforeach; ?>
