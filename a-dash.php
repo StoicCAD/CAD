@@ -1,4 +1,5 @@
 <?php
+
 session_start();
 require_once 'config/db.php';
 
@@ -8,7 +9,7 @@ if (!isset($_SESSION['user_id'])) {
 }
 
 // Fetch detailed user information including dept, rank, and badge number
-$stmt = $conn->prepare("SELECT username, avatar_url, dept, rank, badge_number, super FROM cadusers WHERE id = ?");
+$stmt = $conn->prepare("SELECT username, avatar_url, dept, rank, badge_number, super FROM users WHERE id = ?");
 $stmt->execute([$_SESSION['user_id']]);
 $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -32,9 +33,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $action = $_POST['action'];
         switch ($action) {
             case 'delete_user':
-                $stmt = $conn->prepare("DELETE FROM cadusers WHERE id = ?");
+                $stmt = $conn->prepare("DELETE FROM users WHERE id = ?");
                 $stmt->execute([$_POST['user_id']]);
-                header("https://www.baxdev.optikl.ink/a-dash.php");
                 break;
             case 'edit_user':
                 header("Location: edits/edit_user.php?user_id=" . $_POST['user_id']);
@@ -42,34 +42,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             case 'edit_incident':
                 header("Location: edits/edit_incident.php?incident_id=" . $_POST['incident_id']);
                 break;
-            case 'delete_incident':
-                $stmt = $conn->prepare("DELETE FROM incidents WHERE id = ?");
-                $stmt->execute([$_POST['incident_id']]);
-                header("https://www.baxdev.optikl.ink/a-dash.php");
-                break;
             case 'edit_report':
                 header("Location: edits/edit_report.php?report_id=" . $_POST['report_id']);
                 break;
-                case 'delete_report':
-                    $stmt = $conn->prepare("DELETE FROM reports WHERE report_id = ?");
-                    $stmt->execute([$_POST['report_id']]);
-                    header("https://www.baxdev.optikl.ink/a-dash.php");
-                    break;
             case 'edit_ticket':
                 header("Location: edits/edit_ticket.php?ticket_id=" . $_POST['ticket_id']);
                 break;
-            case 'delete_ticket':
-                $stmt = $conn->prepare("DELETE FROM tickets WHERE ticket_id = ?");
-                $stmt->execute([$_POST['ticket_id']]);
-                header("https://www.baxdev.optikl.ink/a-dash.php");
-                break;
             case 'edit_arrest':
                 header("Location: edits/edit_arrest.php?arrest_id=" . $_POST['arrest_id']);
-                break;
-            case 'delete_arrest':
-                $stmt = $conn->prepare("DELETE FROM arrests WHERE arrest_id = ?");
-                $stmt->execute([$_POST['arrest_id']]);
-                header("https://www.baxdev.optikl.ink/a-dash.php");
                 break;
         }
         exit();
@@ -77,7 +57,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 // Fetch all data to display
-$users = $conn->query("SELECT * FROM cadusers")->fetchAll(PDO::FETCH_ASSOC);
+$users = $conn->query("SELECT * FROM users")->fetchAll(PDO::FETCH_ASSOC);
 $incidents = $conn->query("SELECT * FROM incidents")->fetchAll(PDO::FETCH_ASSOC);
 $reports = $conn->query("SELECT * FROM reports")->fetchAll(PDO::FETCH_ASSOC);
 $tickets = $conn->query("SELECT * FROM tickets")->fetchAll(PDO::FETCH_ASSOC);
@@ -271,8 +251,7 @@ $arrests = $conn->query("SELECT * FROM arrests")->fetchAll(PDO::FETCH_ASSOC);
                                     <?php echo htmlspecialchars($incident['status']); ?>
                                 </td>
                                 <td class="px-5 py-2 border-b border-gray-700 text-sm">
-                                 <a href="edits/edit_incident.php?incident_id=<?php echo $incident['id']; ?>?title=<?php echo $incident["title"]; ?>?desc=<?php echo $incident["description"]; ?>?stat=<?php echo $incident["status"]; ?>" class="text-blue-500 hover:text-blue-400">Edit</a>
-
+                                    <a href="edits/edit_incident.php?incident_id=<?php echo $incident['id']; ?>" class="text-blue-500 hover:text-blue-400">Edit</a>
                                     <form method="post" action="" style="display:inline;">
                                         <input type="hidden" name="incident_id" value="<?php echo $incident['id']; ?>">
                                         <button type="submit" name="action" value="delete_incident" class="text-red-500 hover:text-red-400 ml-4">Delete</button>
@@ -446,4 +425,3 @@ $arrests = $conn->query("SELECT * FROM arrests")->fetchAll(PDO::FETCH_ASSOC);
     </div>
 </body>
 </html>
-
