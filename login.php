@@ -18,7 +18,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['email'], $_POST['passw
     $password = $_POST['password'];
 
     // Prepare and execute the database query
-    $stmt = $conn->prepare("SELECT * FROM users WHERE email = ?");
+    $stmt = $conn->prepare("SELECT * FROM cadusers WHERE email = ?");
     $stmt->execute([$email]);
     $user = $stmt->fetch();
 
