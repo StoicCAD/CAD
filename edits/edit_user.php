@@ -29,7 +29,9 @@ try {
         'rank' => $user['rank'] ?? '',
         'badge_number' => $user['badge_number'] ?? ''
     ];
-    $type = 'Users';
+    $type = 'cadusers';
+    $datatype = 'id';
+    $id = $userId;
 
     // Include the generic edit template
     include 'edit_template.php';
