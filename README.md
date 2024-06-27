@@ -74,7 +74,7 @@ Best regards,
 ## https://mdt.stoiccad.com/
 
 ![SUPPORT (4)](https://github.com/TheStoicBear/StoicCAD/assets/112611821/06461ac7-a73c-468b-9cc4-0cb80eca8750)
-## https://stoiccad.com/store
+## https://stoiccad.com/dashboard.php
 
 ![SUPPORT (5)](https://github.com/TheStoicBear/StoicCAD/assets/112611821/9a76edd4-3cc5-4985-b38f-5aa7cae5faa8)
 ## https://discord.gg/mu7u7zjnKr
