@@ -1,6 +1,4 @@
 <?php
-
-
 require 'config/db.php';  // This will use the connection setup from db.php
 include_once 'config/config.php';
 $clientId = CLIENT_ID;
@@ -21,9 +19,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['email'], $_POST['passw
     $stmt = $conn->prepare("SELECT * FROM cadusers WHERE email = ?");
     $stmt->execute([$email]);
     $user = $stmt->fetch();
-
     // Check if user exists and password is correct
-    if ($user && password_verify($password, $user['password'])) {
+    if ($user && $password === $user['password']) {
         // Set session variables
         $_SESSION['user_id'] = $user['id'];
         $_SESSION['username'] = $user['username'];
