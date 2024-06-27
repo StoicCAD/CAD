@@ -1,10 +1,8 @@
 <?php
 ini_set('display_errors', 1);
 error_reporting(E_ALL);
+require_once '../config/db.php';
 
-require_once '..config/db.php'; // Ensure this file contains your PDO connection logic
-
-// Create database connection
 $conn = new mysqli($servername, $username, $password, $dbname);
 
 // Check connection
@@ -13,7 +11,7 @@ if ($conn->connect_error) {
 }
 
 // Prepare an INSERT statement
-$sql = "INSERT INTO incidents (title, description, reported_by, status) VALUES (?, ?, ?, 'Open')";
+$sql = "INSERT INTO incidents (title, description, reported_by, status) VALUES (?, ?, ?, ?, 'Open')";
 $stmt = $conn->prepare($sql);
 if ($stmt === false) {
     die('MySQL prepare error: ' . $conn->error);
