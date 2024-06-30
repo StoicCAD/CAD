@@ -1,99 +1,97 @@
 <?php
-    // // Set headers and session configurations
-    // header("Access-Control-Allow-Origin: *");
-    // header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS");
-    // header("Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With");
+session_start();
+require_once 'config/db.php'; // Include the file that contains the database connection
 
-    // $secure = true;
-    // $httponly = true;
-    // $samesite = 'None';
-    // $lifetime = 600;
+if (!isset($_SESSION['user_id'])) {
+    header("Location: login.php");
+    exit;
+}
 
-    // if (PHP_VERSION_ID < 70300) {
-    //     session_set_cookie_params($lifetime, '/; samesite='.$samesite, $_SERVER['HTTP_HOST'], $secure, $httponly);
-    // } else {
-    //     session_set_cookie_params([
-    //         'lifetime' => $lifetime,
-    //         'path' => '/',
-    //         'domain' => $_SERVER['HTTP_HOST'],
-    //         'secure' => $secure,
-    //         'httponly' => $httponly,
-    //         'samesite' => $samesite
-    //     ]);
-    // }
-    session_start();
-    require_once 'config/db.php';
-
-    if (!isset($_SESSION['user_id'])) {
-        header("Location: login.php");
-        exit;
-    }
-
+// Fetch user information
+try {
     $stmt = $conn->prepare("SELECT username, avatar_url, dept, rank, badge_number, super FROM users WHERE id = ?");
     $stmt->execute([$_SESSION['user_id']]);
     $user = $stmt->fetch(PDO::FETCH_ASSOC);
+} catch (PDOException $e) {
+    echo "Error: " . $e->getMessage();
+    exit;
+}
 
-    if (!$user) {
-        echo "User not found.";
+if (!$user) {
+    echo "User not found.";
+    exit;
+}
+
+require_once 'config/dept_style_config.php';
+
+$search_query = '';
+$results = [];
+
+if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['search_query'])) {
+    $search_query = trim($_POST['search_query']);
+    try {
+        $search_stmt = $conn->prepare("SELECT * FROM nd_characters WHERE firstname LIKE :query OR lastname LIKE :query OR dob LIKE :query OR gender LIKE :query OR mugshot LIKE :query");
+        $search_stmt->execute(['query' => "%$search_query%"]);
+        $results = $search_stmt->fetchAll(PDO::FETCH_ASSOC);
+    } catch (PDOException $e) {
+        echo "Search Error: " . $e->getMessage();
         exit;
     }
 
-    require_once 'config/dept_style_config.php';
+    foreach ($results as $key => $person) {
+        $char_id = $person['charid'];
 
-    $search_query = '';
-    $results = [];
-
-    if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['search_query'])) {
-        $search_query = trim($_POST['search_query']);
-        $search_stmt = $conn->prepare("SELECT * FROM nd_characters WHERE firstname LIKE :query OR lastname LIKE :query OR dob LIKE :query OR gender LIKE :query OR mugshot LIKE :query");
-        $search_stmt->execute([':query' => "%$search_query%"]);
-        $results = $search_stmt->fetchAll(PDO::FETCH_ASSOC);
-
-        foreach ($results as $key => $person) {
-            $char_id = $person['charid'];
-
-            // Fetch arrest records
+        // Fetch arrest records
+        try {
             $arrest_stmt = $conn->prepare("SELECT * FROM arrests WHERE char_id = ?");
             $arrest_stmt->execute([$char_id]);
             $results[$key]['arrests'] = $arrest_stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            echo "Arrest Fetch Error: " . $e->getMessage();
+            exit;
+        }
 
-            // Fetch ticket records
+        // Fetch ticket records
+        try {
             $ticket_stmt = $conn->prepare("SELECT * FROM tickets WHERE char_id = ?");
             $ticket_stmt->execute([$char_id]);
             $results[$key]['tickets'] = $ticket_stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            echo "Ticket Fetch Error: " . $e->getMessage();
+            exit;
+        }
 
-            // Fetch report records
+        // Fetch report records
+        try {
             $report_stmt = $conn->prepare("SELECT * FROM reports WHERE char_id = ?");
             $report_stmt->execute([$char_id]);
             $results[$key]['reports'] = $report_stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            echo "Report Fetch Error: " . $e->getMessage();
+            exit;
         }
     }
+}
 
-    // Search and fetch results
-    if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['search_query'])) {
-        $search_query = trim($_POST['search_query']);
-        $search_stmt = $conn->prepare("SELECT * FROM nd_characters WHERE firstname LIKE :query OR lastname LIKE :query OR dob LIKE :query OR gender LIKE :query OR mugshot LIKE :query");
-        $search_stmt->execute([':query' => "%$search_query%"]);
-        $results = $search_stmt->fetchAll(PDO::FETCH_ASSOC);
-    }
-    // Default positions for the full name
-    $fullNameTop = '180px';  // Change this in PHP as needed
-    $fullNameLeft = '45%';  // Change this in PHP as needed
-    $firstNameTop = '70px';
-    $firstNameLeft = '-10%';
+// Default positions for the full name
+$fullNameTop = '180px';  // Change this in PHP as needed
+$fullNameLeft = '45%';  // Change this in PHP as needed
+$firstNameTop = '70px';
+$firstNameLeft = '-10%';
 
-    $lastNameTop = '70px';
-    $lastNameLeft = '10%';
+$lastNameTop = '70px';
+$lastNameLeft = '10%';
 
-    $dobTop = '127px';
-    $dobLeft = '-10%';
+$dobTop = '127px';
+$dobLeft = '-10%';
 
-    $genderTop = '127px';
-    $genderLeft = '5%';
+$genderTop = '127px';
+$genderLeft = '5%';
 
-    $driversLicenseTop = '180px';
-    $driversLicenseLeft = '30%';
+$driversLicenseTop = '180px';
+$driversLicenseLeft = '30%';
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>

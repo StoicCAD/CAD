@@ -291,7 +291,7 @@
 <body class="font-sans antialiased text-white">
     <div class="flex min-h-screen">
         <!-- Toggle Button -->
-        <button onclick="toggleSidebar()" class="sidebar-button text-white text-xl bg-gray-800 px-4 py-2 rounded">&#9776; Toggle</button>
+        <button onclick="toggleSidebar()" class="sidebar-button text-white text-xl bg-gray-800 px-4 py-2 rounded">&#9776;</button>
         
         <!-- Sidebar -->
         <div class="bg-gray-800 w-64 space-y-6 py-7 px-2 fixed inset-y-0 left-0 overflow-y-auto">

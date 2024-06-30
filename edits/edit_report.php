@@ -1,7 +1,6 @@
 <?php
 session_start();
-require_once '../db.php';
-
+require_once '../config/db.php';
 if (!isset($_GET['report_id']) || !is_numeric($_GET['report_id'])) {
     echo "Invalid report ID.";
     exit;
