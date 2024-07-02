@@ -26,18 +26,24 @@
     require_once '../config/dept_style_config.php'; // Include the department style configurations
 
 
-    // Get char_id from URL or POST
-    $char_id = $_GET['char_id'] ?? ($_POST['char_id'] ?? null);
+    // Retrieve player_id from GET or POST request
+    $player_id = $_GET['player_id'] ?? ($_POST['player_id'] ?? null);
 
-    if ($_SERVER['REQUEST_METHOD'] == 'POST' && $char_id) {
+    // Make sure player_id is numeric to prevent SQL Injection or other issues
+    if (!is_numeric($player_id)) {
+        echo "Invalid Player ID.";
+        exit;
+    }
+    if ($_SERVER['REQUEST_METHOD'] == 'POST' && $player_id) {
         $officer_name = $_POST['officer_name'];
         $arrest_date = $_POST['arrest_date'];
         $charges = $_POST['charges'];
         $bail_amount = $_POST['bail_amount'];
 
-        $stmt = $conn->prepare("INSERT INTO arrests (char_id, officer_name, arrest_date, charges, bail_amount) VALUES (?, ?, ?, ?, ?)");
-        if ($stmt->execute([$char_id, $officer_name, $arrest_date, $charges, $bail_amount])) {
-            header("Location: arrests.php");
+        // Insert data into the arrests table
+        $stmt = $conn->prepare("INSERT INTO arrests (player_id, officer_name, arrest_date, charges, bail_amount) VALUES (?, ?, ?, ?, ?)");
+        if ($stmt->execute([$player_id, $officer_name, $arrest_date, $charges, $bail_amount])) {
+            header("Location: ../arrests.php");
             exit;
         } else {
             $error = "Failed to add arrest.";

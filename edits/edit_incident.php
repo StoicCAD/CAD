@@ -1,8 +1,8 @@
 <?php
 ini_set('display_errors', 1);
 error_reporting(E_ALL);
-
 require_once '../config/db.php';
+
 // Create database connection
 $conn = new mysqli($servername, $username, $password, $dbname);
 

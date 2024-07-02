@@ -1,9 +1,9 @@
 <?php
-
+session_start();
 
 include_once 'config/db.php';
 include_once 'config/config.php';
-session_start();
+
 
 $clientId = CLIENT_ID;
 $clientSecret = CLIENT_SECRET;
@@ -69,11 +69,8 @@ try {
         $_SESSION['user_id'] = $existingUser['id'];
     } else {
         $avatarUrl = isset($user->avatar) ? "https://cdn.discordapp.com/avatars/{$user->id}/{$user->avatar}.png" : null;
-        $defaultPassword = 'defaultPassword'; // Example default password
-        $hashedPassword = password_hash($defaultPassword, PASSWORD_DEFAULT);
-        $stmt = $conn->prepare("INSERT INTO users (discord_id, username, email, avatar_url, password) VALUES (?, ?, ?, ?, ?)");
-        $stmt->execute([$user->id, $user->username, $user->email, $avatarUrl, $hashedPassword]);
-        
+        $stmt = $conn->prepare("INSERT INTO users (discord_id, username, email, avatar_url) VALUES (?, ?, ?, ?)");
+        $stmt->execute([$user->id, $user->username, $user->email, $avatarUrl]);
         $_SESSION['user_id'] = $conn->lastInsertId();
     }
 

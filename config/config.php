@@ -2,21 +2,37 @@
 // Set error reporting
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
+
 // Start session
 session_start();
-// Include the centralized database connection
-include 'database.php';
 
 
+// Database credentials
+define('DB_HOST', '76..59'); // Database host (typically 'localhost')
+define('DB_USERNAME', 'discord'); // Database username (adjust as per your environment)
+define('DB_PASSWORD', ''); // Database password (adjust as per your environment)
+define('DB_NAME', 'qbtest'); // Database name
+define('CLIENT_ID', '');
+define('CLIENT_SECRET', '-');
+define('REDIRECTURI', 'https://yourdomain/process-oauth.php');
 
-// https://discord.com/developers/applications
-// OAuth2 Use Discord as an authorization system or use our API on behalf of your users. Add a redirect URI, pick your scopes, roll a D20 for good luck, and go!
-define('CLIENT_ID', 'YOUR_DISCORD_CLIENTID');
-define('CLIENT_SECRET', 'YOUR_DISCORD_CLIENT_SECRET');
+//Access the map at http://<server IP>:<server port>/webmap/
+// or 
+//https://<owner>-<server ID>.users.cfx.re/webmap/ (Note: The trailing slash is necessary).
+$iframeUrl = "https://shawn1-wxg9gm.users.cfx.re/webmap/";
 
-//Redirect URI. If you are using your own Domain (KSRP.COM) than you'd use https://KSRP.COM/process-oauth.php
-//Redirect URI. If you are using HTMLBear. You'd use https://html.thestoicbear.dev/YourUserName/YourWebsiteName/process-oauth.php
-define('REDIRECTURI', 'https://html.thestoicbear.dev/Stoic/stoiccad/process-oauth.php');
+// Establish PDO database connection
+try {
+    $dsn = "mysql:host=" . DB_HOST . ";dbname=" . DB_NAME . ";charset=utf8mb4";
+    $options = [
+        PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
+        PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+        PDO::ATTR_EMULATE_PREPARES   => false,
+    ];
+    $conn = new PDO($dsn, DB_USERNAME, DB_PASSWORD, $options);
+} catch (PDOException $e) {
+    die("Could not connect to the database " . DB_NAME . ": " . $e->getMessage());
+}
 
 
 // Function to check if user is logged in

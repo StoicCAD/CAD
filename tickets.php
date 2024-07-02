@@ -1,26 +1,5 @@
 <?php
-// // Set headers and session configurations
-// header("Access-Control-Allow-Origin: *");
-// header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS");
-// header("Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With");
 
-// $secure = true;
-// $httponly = true;
-// $samesite = 'None';
-// $lifetime = 600;
-
-// if (PHP_VERSION_ID < 70300) {
-//     session_set_cookie_params($lifetime, '/; samesite='.$samesite, $_SERVER['HTTP_HOST'], $secure, $httponly);
-// } else {
-//     session_set_cookie_params([
-//         'lifetime' => $lifetime,
-//         'path' => '/',
-//         'domain' => $_SERVER['HTTP_HOST'],
-//         'secure' => $secure,
-//         'httponly' => $httponly,
-//         'samesite' => $samesite
-//     ]);
-// }
 session_start();
 require_once 'config/db.php';
 
@@ -50,17 +29,17 @@ if ($user['dept'] === 'CIV') {
 require_once 'config/dept_style_config.php'; // Include the department style configurations
 
 
-// Check for char_id in the URL or POST and handle appropriately
-$char_id = isset($_GET['char_id']) ? $_GET['char_id'] : (isset($_POST['char_id']) ? $_POST['char_id'] : null);
+// Check for player_id in the URL or POST and handle appropriately
+$player_id = isset($_GET['player_id']) ? $_GET['player_id'] : (isset($_POST['player_id']) ? $_POST['v'] : null);
 
-if ($_SERVER['REQUEST_METHOD'] == 'POST' && $char_id) {
+if ($_SERVER['REQUEST_METHOD'] == 'POST' && $player_id) {
     $issued_by = $_POST['issued_by'];
     $issue_date = $_POST['issue_date'];
     $violation = $_POST['violation'];
     $fine_amount = $_POST['fine_amount'];
 
-    $stmt = $conn->prepare("INSERT INTO tickets (char_id, issued_by, issue_date, violation, fine_amount) VALUES (?, ?, ?, ?, ?)");
-    if ($stmt->execute([$char_id, $issued_by, $issue_date, $violation, $fine_amount])) {
+    $stmt = $conn->prepare("INSERT INTO tickets (player_id, issued_by, issue_date, violation, fine_amount) VALUES (?, ?, ?, ?, ?)");
+    if ($stmt->execute([$player_id, $issued_by, $issue_date, $violation, $fine_amount])) {
         header("Location: tickets.php");
         exit;
     } else {
@@ -99,7 +78,7 @@ $tickets = $stmt->fetchAll(PDO::FETCH_ASSOC);
             border-radius: 0 0 0.5rem 0.5rem;
         }
         .sidebar {
-            transition: transform 0.3s ease-out;
+            transition: transform 1.3s ease-out;
             transform: translateX(0);
             z-index: 10;
         }
@@ -113,7 +92,7 @@ $tickets = $stmt->fetchAll(PDO::FETCH_ASSOC);
             z-index: 20;
         }
         .content {
-            transition: margin-left 0.9s ease-out;
+            transition: margin-left 1.4s ease-out;
             margin-right: 120px; /* match sidebar width when visible */
         }
         .full-width {
@@ -124,10 +103,52 @@ $tickets = $stmt->fetchAll(PDO::FETCH_ASSOC);
 <body class="font-sans antialiased text-white">
     <div class="flex min-h-screen">
         <!-- Toggle Button -->
-        <button onclick="toggleSidebar()" class="sidebar-button text-white text-xl bg-gray-800 px-4 py-2 rounded">&#9776;</button>
+        <button onclick="toggleSidebar()" class="sidebar-button text-white text-xl bg-gray-800 px-4 py-2 rounded">&#9776; Toggle</button>
         
-        <!-- Include Sidebar -->
-        <?php include 'sidebar.php'; ?>
+        <!-- Sidebar -->
+        <div id="sidebar" class="bg-gray-800 w-64 space-y-6 py-7 px-2 fixed inset-y-0 left-0 overflow-y-auto sidebar">
+            <div class="text-center">
+                <!-- Ensure values are not null before using htmlspecialchars -->
+                <img src="<?php echo htmlspecialchars($user['avatar_url'] ?? 'default_avatar.png'); ?>" alt="User Avatar" class="h-20 w-20 rounded-full mx-auto">
+                <h2 class="mt-4 mb-2 font-semibold"><?php echo htmlspecialchars($user['username'] ?? 'Unknown User'); ?></h2>
+                <p>
+                    <?php echo htmlspecialchars($user['dept'] ?? 'No Department'); ?>, 
+                    <?php echo htmlspecialchars($user['rank'] ?? 'No Rank'); ?><br>
+                    Badge #<?php echo htmlspecialchars($user['badge_number'] ?? 'No Badge'); ?>
+                </p>
+            </div>
+
+            <nav>
+                <a href="dashboard.php" class="block py-2.5 px-4 rounded hover:bg-blue-600"><i class="fas fa-home mr-2"></i>Dashboard</a>
+                <a href="incidents.php" class="block py-2.5 px-4 rounded hover:bg-blue-600"><i class="fas fa-exclamation-triangle mr-2"></i>Active Calls</a>
+                <a href="reports.php" class="block py-2.5 px-4 rounded hover:bg-blue-600"><i class="fas fa-file-alt mr-2"></i>Reports</a>
+                <a href="map.php" class="block py-2.5 px-4 rounded hover:bg-blue-600"><i class="fas fa-map-marked-alt mr-2"></i>Map</a>
+                <!-- Dropdown for Searches -->
+                <div class="relative dropdown">
+                    <a href="#" class="block py-2.5 px-4 rounded hover:bg-blue-600 cursor-pointer"><i class="fas fa-search mr-2"></i>Searches <i class="fa fa-caret-down"></i></a>
+                    <div class="dropdown-menu">
+                        <a href="people_search.php" class="block py-2 px-4 text-sm text-white hover:bg-gray-600">People</a>
+                        <a href="vehicle_search.php" class="block py-2 px-4 text-sm text-white hover:bg-gray-600">Vehicles</a>
+                    </div>
+                </div>
+
+                <a href="settings.php" class="block py-2.5 px-4 rounded hover:bg-blue-600"><i class="fas fa-cog mr-2"></i>Settings</a>
+                <?php if ($user['rank'] == 'Admin'): ?>
+                    <a href="a-dash.php" class="block py-2.5 px-4 rounded hover:bg-blue-600"><i class="fas fa-user-shield mr-2"></i>Admin Dashboard</a>
+                <?php endif; ?>
+
+                <?php if ($user['super'] == 1): ?>
+                    <a href="super-dashboard.php" class="block py-2.5 px-4 rounded hover:bg-blue-600"><i class="fas fa-user-shield mr-2"></i>Supervisor Dashboard</a>
+                <?php endif; ?>
+                
+                <form method="post" action="logout.php" class="mt-5">
+                    <button type="submit" name="logout" class="w-full py-2 bg-red-600 text-white rounded hover:bg-red-700 focus:outline-none">
+                        <i class="fas fa-sign-out-alt mr-2"></i> Logout
+                    </button>
+                </form>
+            </nav>
+        </div>
+        <div>
 
         <!-- Content -->
         <div id="mainContent" class="flex-1 flex flex-col ml-64 p-10 content">
@@ -164,7 +185,7 @@ $tickets = $stmt->fetchAll(PDO::FETCH_ASSOC);
                                 <?= htmlspecialchars($ticket['ticket_id']); ?>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
-                                <?= htmlspecialchars($ticket['char_id']); ?>
+                                <?= htmlspecialchars($ticket['player_id']); ?>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <?= htmlspecialchars($ticket['issued_by']); ?>
