@@ -1,6 +1,4 @@
 <?php
-
-
 require 'config/db.php';  // This will use the connection setup from db.php
 include_once 'config/config.php';
 $clientId = CLIENT_ID;
@@ -12,30 +10,46 @@ if (!isset($_SESSION['oauth2state'])) {
 
 $authorizeURL = "https://discord.com/api/oauth2/authorize?client_id={$clientId}&response_type=code&redirect_uri=" . urlencode($redirectUri) . "&scope=identify%20email&state=" . $_SESSION['oauth2state'];
 
+// Check token function
+function check_token($token) {
+    $url = 'https://stoiccad.com/check_token.php'; // Local PHP endpoint
+    $data = json_encode(array('token' => $token));
+    
+    $ch = curl_init($url);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_POST, true);
+    curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
+    curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json'));
+    
+    $response = curl_exec($ch);
+    curl_close($ch);
+    
+    return json_decode($response, true);
+}
 
-if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['email'], $_POST['password'])) {
-    $email = $_POST['email'];
-    $password = $_POST['password'];
+// Example usage:
+if ($_SERVER['REQUEST_METHOD'] == 'GET') {
+    $token = 'd44da2d49261c9ff9786f3f5c7c412f6'; // Replace with actual token to check
+    $token_check_result = check_token($token);
 
-    // Prepare and execute the database query
-    $stmt = $conn->prepare("SELECT * FROM users WHERE email = ?");
-    $stmt->execute([$email]);
-    $user = $stmt->fetch();
-
-    // Check if user exists and password is correct
-    if ($user && password_verify($password, $user['password'])) {
-        // Set session variables
-        $_SESSION['user_id'] = $user['id'];
-        $_SESSION['username'] = $user['username'];
-        $_SESSION['dept'] = $user['dept'];
-        $_SESSION['rank'] = $user['rank'];
-        $_SESSION['badge_number'] = $user['badge_number'];
-
-        // Redirect to the dashboard
-        header("Location: dashboard.php");
-        exit;
+    // Determine the message based on token validity
+    if ($token_check_result && isset($token_check_result['valid'])) {
+        if ($token_check_result['valid']) {
+            $notification_message = '[StoicCAD©️] ✅ Token is valid.';
+            $notification_action = '[StoicCAD©️] Proceed to dashboard: <a href="https://stoiccad.com/dashboard.php">Dashboard</a>';
+            $notification_class = 'bg-green-500'; // Green checkmark background
+            $closable = true; // Allow closing notification
+        } else {
+            $notification_message = '[StoicCAD©️] ❌ Token is invalid.';
+            $notification_action = '[StoicCAD©️] Please validate token: <a href="https://stoiccad.com/dashboard.php">Dashboard</a>';
+            $notification_class = 'bg-red-500'; // Red 'x' background
+            $closable = false; // Don't allow closing notification
+        }
     } else {
-        $error = "Invalid login credentials.";
+        $notification_message = '[StoicCAD©️] ⚠️ Failed to check token.';
+        $notification_action = '[StoicCAD©️] Please try again later.';
+        $notification_class = 'bg-gray-500'; // Gray background for generic notification
+        $closable = false; // Don't allow closing notification
     }
 }
 ?>
@@ -47,6 +61,98 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['email'], $_POST['passw
     <title>Police Dashboard Login</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.0.3/dist/tailwind.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css">
+    <style>
+        /* Styles for notification */
+        .notification {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 12px;
+            color: white;
+            border-radius: 6px;
+            display: none; /* Hidden by default */
+            animation: fade-in 0.5s ease-out forwards, slide-up 0.5s ease-out forwards;
+        }
+
+        @keyframes fade-in {
+            0% { opacity: 0; }
+            100% { opacity: 1; }
+        }
+
+        @keyframes slide-up {
+            0% { transform: translateY(50px); }
+            100% { transform: translateY(0); }
+        }
+
+        .notification.visible {
+            display: block;
+        }
+
+        .bg-green-500 {
+            background-color: #34D399; /* Update tailwind color to match Discord green */
+        }
+
+        .bg-red-500 {
+            background-color: #EF4444; /* Update tailwind color to match Discord red */
+        }
+
+        .bg-gray-500 {
+            background-color: #6B7280; /* Update tailwind color to match Discord gray */
+        }
+    </style>
+    <script>
+        // Function to check token on page load
+        function checkTokenOnLoad(token) {
+            var xhr = new XMLHttpRequest();
+            var url = 'https://stoiccad.com/check_token.php'; // Use HTTPS endpoint
+            xhr.open('POST', url, true);
+            xhr.setRequestHeader('Content-Type', 'application/json');
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState === XMLHttpRequest.DONE) {
+                    if (xhr.status === 200) {
+                        try {
+                            var response = JSON.parse(xhr.responseText);
+                            if (response && response.valid !== undefined) {
+                                if (response.valid) {
+                                    showNotification('[StoicCAD©️] ✅ Token is valid."', '', 'bg-green-500', true);
+                                } else {
+                                    showNotification('[StoicCAD©️] ⚠️ Token is invalid.', '] Please validate token: <a href="https://stoiccad.com/dashboard.php">Dashboard</a>', 'bg-red-500', false);
+                                }
+                            } else {
+                                showNotification('[StoicCAD©️] ⚠️ Invalid response format.', '[StoicCAD©️] Please try again later.', 'bg-gray-500', false);
+                            }
+                        } catch (error) {
+                            showNotification('[StoicCAD©️] ⚠️ Error parsing response: ' + error.message, '[StoicCAD©️] Please try again later.', 'bg-gray-500', false);
+                        }
+                    } else {
+                        showNotification('[StoicCAD©️] ⚠️ Request failed with status: ' + xhr.status, '[StoicCAD©️] Please try again later.', 'bg-gray-500', false);
+                    }
+                }
+            };
+            var data = JSON.stringify({ token: token });
+            xhr.send(data);
+        }
+
+        // Function to display notification
+        function showNotification(message, action, bgClass, closable) {
+            var notification = document.getElementById('notification');
+            notification.innerHTML = '<div class="flex items-center justify-between"><div class="flex items-center"><span class="mr-2">' + message + '</span></div><div>' + action + '</div></div><div>' + (closable ? '<i class="fas fa-times cursor-pointer" onclick="hideNotification()"></i>' : '') + '</div>';
+            notification.className = 'notification ' + bgClass + ' visible';
+        }
+
+        // Function to hide notification
+        function hideNotification() {
+            var notification = document.getElementById('notification');
+            notification.className = 'notification'; // Hide notification
+        }
+
+        // Execute token check on page load
+        window.onload = function () {
+            var token = 'YOUR_TOKEN'; // Replace with actual token to check
+            checkTokenOnLoad(token);
+        };
+        
+    </script>
 </head>
 <body class="bg-gray-800 min-h-screen flex items-center justify-center">
     <div class="w-full max-w-md p-8 space-y-6 bg-gray-700 rounded-lg shadow-lg text-white">
@@ -65,6 +171,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['email'], $_POST['passw
         <div class="text-center mt-4">
             <a href="<?php echo $authorizeURL ?>" class="bg-blue-600 hover:bg-blue-800 text-white font-bold py-2 px-4 rounded">Login with Discord</a>
         </div>
+        <!-- Notification area -->
+        <div id="notification" class="notification"></div>
     </div>
 </body>
 </html>
