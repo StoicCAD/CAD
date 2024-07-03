@@ -26,32 +26,6 @@ function check_token($token) {
     
     return json_decode($response, true);
 }
-
-// Example usage:
-if ($_SERVER['REQUEST_METHOD'] == 'GET') {
-    $token = 'd44da2d49261c9ff9786f3f5c7c412f6'; // Replace with actual token to check
-    $token_check_result = check_token($token);
-
-    // Determine the message based on token validity
-    if ($token_check_result && isset($token_check_result['valid'])) {
-        if ($token_check_result['valid']) {
-            $notification_message = '[StoicCAD©️] ✅ Token is valid.';
-            $notification_action = '[StoicCAD©️] Proceed to dashboard: <a href="https://stoiccad.com/dashboard.php">Dashboard</a>';
-            $notification_class = 'bg-green-500'; // Green checkmark background
-            $closable = true; // Allow closing notification
-        } else {
-            $notification_message = '[StoicCAD©️] ❌ Token is invalid.';
-            $notification_action = '[StoicCAD©️] Please validate token: <a href="https://stoiccad.com/dashboard.php">Dashboard</a>';
-            $notification_class = 'bg-red-500'; // Red 'x' background
-            $closable = false; // Don't allow closing notification
-        }
-    } else {
-        $notification_message = '[StoicCAD©️] ⚠️ Failed to check token.';
-        $notification_action = '[StoicCAD©️] Please try again later.';
-        $notification_class = 'bg-gray-500'; // Gray background for generic notification
-        $closable = false; // Don't allow closing notification
-    }
-}
 ?>
 <!DOCTYPE html>
 <html lang="en">
