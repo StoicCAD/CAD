@@ -26,6 +26,33 @@ function check_token($token) {
     
     return json_decode($response, true);
 }
+
+if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['email'], $_POST['password'])) {
+    $email = $_POST['email'];
+    $password = $_POST['password'];
+
+    // Prepare and execute the database query
+    $stmt = $conn->prepare("SELECT * FROM users WHERE email = ?");
+    $stmt->execute([$email]);
+    $user = $stmt->fetch();
+
+    // Check if user exists and password is correct
+    if ($user && password_verify($password, $user['password'])) {
+        // Set session variables
+        $_SESSION['user_id'] = $user['id'];
+        $_SESSION['username'] = $user['username'];
+        $_SESSION['dept'] = $user['dept'];
+        $_SESSION['rank'] = $user['rank'];
+        $_SESSION['badge_number'] = $user['badge_number'];
+
+        // Redirect to the dashboard
+        header("Location: dashboard.php");
+        exit;
+    } else {
+        $error = "Invalid login credentials.";
+    }
+}
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -90,7 +117,7 @@ function check_token($token) {
                                 if (response.valid) {
                                     showNotification('[StoicCAD©️] ✅ Token is valid."', '', 'bg-green-500', true);
                                 } else {
-                                    showNotification('[StoicCAD©️] ⚠️ Token is invalid.', '] Please validate token: <a href="https://stoiccad.com/dashboard.php">Dashboard</a>', 'bg-red-500', false);
+                                    showNotification('[StoicCAD©️] ⚠️ Token is invalid.', ' Please validate token: <a href="https://stoiccad.com/dashboard.php">Dashboard</a>', 'bg-red-500', false);
                                 }
                             } else {
                                 showNotification('[StoicCAD©️] ⚠️ Invalid response format.', '[StoicCAD©️] Please try again later.', 'bg-gray-500', false);
