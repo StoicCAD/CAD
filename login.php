@@ -55,7 +55,7 @@ function check_token($token) {
 
 // Example usage:
 if ($_SERVER['REQUEST_METHOD'] == 'GET') {
-    $token = '57040eea67fe21336e32315fae444dc0'; // Replace with actual token to check
+    $token = 'TOKEN'; // Replace with actual token to check
     $token_check_result = check_token($token);
 
     // Determine the message based on token validity
@@ -174,7 +174,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
 
         // Execute token check on page load
         window.onload = function () {
-            var token = '57040eea67fe21336e32315fae444dc0'; // Replace with actual token to check
+            var token = ''; // Replace with actual token to check
             checkTokenOnLoad(token);
         };
         
