@@ -10,6 +10,23 @@ if (!isset($_SESSION['oauth2state'])) {
 
 $authorizeURL = "https://discord.com/api/oauth2/authorize?client_id={$clientId}&response_type=code&redirect_uri=" . urlencode($redirectUri) . "&scope=identify%20email&state=" . $_SESSION['oauth2state'];
 
+// Check token function
+function check_token($token) {
+    $url = 'https://stoiccad.com/check_token.php'; // Local PHP endpoint
+    $data = json_encode(array('token' => $token));
+    
+    $ch = curl_init($url);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_POST, true);
+    curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
+    curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json'));
+    
+    $response = curl_exec($ch);
+    curl_close($ch);
+    
+    return json_decode($response, true);
+}
+
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['email'], $_POST['password'])) {
     $email = $_POST['email'];
     $password = $_POST['password'];
@@ -36,48 +53,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['email'], $_POST['passw
     }
 }
 
-// Check token function
-function check_token($token) {
-    $url = 'https://stoiccad.com/check_token.php'; // Local PHP endpoint
-    $data = json_encode(array('token' => $token));
-    
-    $ch = curl_init($url);
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    curl_setopt($ch, CURLOPT_POST, true);
-    curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
-    curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json'));
-    
-    $response = curl_exec($ch);
-    curl_close($ch);
-    
-    return json_decode($response, true);
-}
-
-// Example usage:
-if ($_SERVER['REQUEST_METHOD'] == 'GET') {
-    $token = 'TOKEN'; // Replace with actual token to check
-    $token_check_result = check_token($token);
-
-    // Determine the message based on token validity
-    if ($token_check_result && isset($token_check_result['valid'])) {
-        if ($token_check_result['valid']) {
-            $notification_message = '[StoicCAD©️] ✅ Token is valid.';
-            $notification_action = '[StoicCAD©️] Proceed to dashboard: <a href="https://stoiccad.com/dashboard.php">Dashboard</a>';
-            $notification_class = 'bg-green-500'; // Green checkmark background
-            $closable = true; // Allow closing notification
-        } else {
-            $notification_message = '[StoicCAD©️] ❌ Token is invalid.';
-            $notification_action = '[StoicCAD©️] Please validate token: <a href="https://stoiccad.com/dashboard.php">Dashboard</a>';
-            $notification_class = 'bg-red-500'; // Red 'x' background
-            $closable = false; // Don't allow closing notification
-        }
-    } else {
-        $notification_message = '[StoicCAD©️] ⚠️ Failed to check token.';
-        $notification_action = '[StoicCAD©️] Please try again later.';
-        $notification_class = 'bg-gray-500'; // Gray background for generic notification
-        $closable = false; // Don't allow closing notification
-    }
-}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -142,7 +117,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
                                 if (response.valid) {
                                     showNotification('[StoicCAD©️] ✅ Token is valid."', '', 'bg-green-500', true);
                                 } else {
-                                    showNotification('[StoicCAD©️] ⚠️ Token is invalid.', '] Please validate token: <a href="https://stoiccad.com/dashboard.php">Dashboard</a>', 'bg-red-500', false);
+                                    showNotification('[StoicCAD©️] ⚠️ Token is invalid.', ' Please validate token: <a href="https://stoiccad.com/dashboard.php">Dashboard</a>', 'bg-red-500', false);
                                 }
                             } else {
                                 showNotification('[StoicCAD©️] ⚠️ Invalid response format.', '[StoicCAD©️] Please try again later.', 'bg-gray-500', false);
@@ -174,7 +149,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
 
         // Execute token check on page load
         window.onload = function () {
-            var token = ''; // Replace with actual token to check
+            var token = 'YOUR_TOKEN'; // Replace with actual token to check
             checkTokenOnLoad(token);
         };
         
