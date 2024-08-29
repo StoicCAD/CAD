@@ -10,6 +10,7 @@ CREATE TABLE IF NOT EXISTS `cadusers` (
   `dept` varchar(100) DEFAULT 'CIV',
   `rank` varchar(100) DEFAULT NULL,
   `badge_number` varchar(50) DEFAULT NULL,
+  `super` tinyint(1) DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `discord_id` (`discord_id`),
   UNIQUE KEY `email` (`email`)
