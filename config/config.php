@@ -15,7 +15,7 @@ define('DB_NAME', 'qbtest'); // Database name
 define('CLIENT_ID', '');
 define('CLIENT_SECRET', '-');
 define('REDIRECTURI', 'https://yourdomain/process-oauth.php');
-
+define('TOKEN', 'your_stoiccad_token_here');
 //Access the map at http://<server IP>:<server port>/webmap/
 // or 
 //https://<owner>-<server ID>.users.cfx.re/webmap/ (Note: The trailing slash is necessary).
