@@ -1,8 +1,11 @@
 <?php
+
 require 'config/db.php';  // This will use the connection setup from db.php
 include_once 'config/config.php';
+
 $clientId = CLIENT_ID;
 $redirectUri = REDIRECTURI;
+$token = TOKEN;
 
 if (!isset($_SESSION['oauth2state'])) {
     $_SESSION['oauth2state'] = hash('sha256', microtime(TRUE).rand().$_SERVER['REMOTE_ADDR']);
@@ -52,7 +55,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['email'], $_POST['passw
         $error = "Invalid login credentials.";
     }
 }
-
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -115,7 +117,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['email'], $_POST['passw
                             var response = JSON.parse(xhr.responseText);
                             if (response && response.valid !== undefined) {
                                 if (response.valid) {
-                                    showNotification('[StoicCAD©️] ✅ Token is valid."', '', 'bg-green-500', true);
+                                    showNotification('[StoicCAD©️] ✅ Token is valid. ', '', 'bg-green-500', true);
                                 } else {
                                     showNotification('[StoicCAD©️] ⚠️ Token is invalid.', ' Please validate token: <a href="https://stoiccad.com/dashboard.php">Dashboard</a>', 'bg-red-500', false);
                                 }
@@ -149,10 +151,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['email'], $_POST['passw
 
         // Execute token check on page load
         window.onload = function () {
-            var token = 'YOUR_TOKEN'; // Replace with actual token to check
+            var token = '<?php echo TOKEN; ?>'; // Use token from PHP config
             checkTokenOnLoad(token);
         };
-        
     </script>
 </head>
 <body class="bg-gray-800 min-h-screen flex items-center justify-center">
