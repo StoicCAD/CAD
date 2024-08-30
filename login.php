@@ -5,7 +5,7 @@ require 'config/db.php';  // This will use the connection setup from db.php
 include_once 'config/config.php';
 $clientId = CLIENT_ID;
 $redirectUri = REDIRECTURI;
-
+$token = TOKEN;
 if (!isset($_SESSION['oauth2state'])) {
     $_SESSION['oauth2state'] = hash('sha256', microtime(TRUE).rand().$_SERVER['REMOTE_ADDR']);
 }
