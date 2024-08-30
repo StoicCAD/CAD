@@ -1,9 +1,9 @@
 <?php
-session_start();
+
 
 include_once 'config/db.php';
 include_once 'config/config.php';
-
+session_start();
 
 $clientId = CLIENT_ID;
 $clientSecret = CLIENT_SECRET;

@@ -6,20 +6,20 @@ ini_set('display_errors', 1);
 // Start session
 session_start();
 
-
 // Database credentials
-define('DB_HOST', '76..59'); // Database host (typically 'localhost')
+define('DB_HOST', '127.0.0.1:3308'); // Database host (typically 'localhost')
 define('DB_USERNAME', 'discord'); // Database username (adjust as per your environment)
 define('DB_PASSWORD', ''); // Database password (adjust as per your environment)
-define('DB_NAME', 'qbtest'); // Database name
+define('DB_NAME', 'nats'); // Database name
 define('CLIENT_ID', '');
 define('CLIENT_SECRET', '-');
-define('REDIRECTURI', 'https://yourdomain/process-oauth.php');
+define('REDIRECTURI', 'https://your-website/process-oauth.php');
 
 //Access the map at http://<server IP>:<server port>/webmap/
 // or 
 //https://<owner>-<server ID>.users.cfx.re/webmap/ (Note: The trailing slash is necessary).
-$iframeUrl = "https://shawn1-wxg9gm.users.cfx.re/webmap/";
+$iframeUrl = "https://<owner>-<server ID>.users.cfx.re/webmap/ ";
+
 
 // Establish PDO database connection
 try {

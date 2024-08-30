@@ -13,7 +13,8 @@ $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
 // Check if the form was submitted
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    require_once '../db.php';  // Ensure your database connection file is correct
+    require_once '../config/db.php'; // Ensure this file contains your PDO connection logic
+  // Ensure your database connection file is correct
     $errors = [];
     $updateValues = [];
 

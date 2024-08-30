@@ -37,19 +37,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $stmt->execute([$_POST['user_id']]);
                 break;
             case 'edit_user':
-                header("Location: edits/edit_user.php?user_id=" . $_POST['user_id']);
+                header("Location: ../edits/edit_user.php?user_id=" . $_POST['user_id']);
                 break;
             case 'edit_incident':
-                header("Location: edits/edit_incident.php?incident_id=" . $_POST['incident_id']);
+                header("Location: ../edits/edit_incident.php?incident_id=" . $_POST['incident_id']);
                 break;
             case 'edit_report':
-                header("Location: edits/edit_report.php?report_id=" . $_POST['report_id']);
+                header("Location: ../edits/edit_report.php?report_id=" . $_POST['report_id']);
                 break;
             case 'edit_ticket':
-                header("Location: edits/edit_ticket.php?ticket_id=" . $_POST['ticket_id']);
+                header("Location: ../edits/edit_ticket.php?ticket_id=" . $_POST['ticket_id']);
                 break;
             case 'edit_arrest':
-                header("Location: edits/edit_arrest.php?arrest_id=" . $_POST['arrest_id']);
+                header("Location: ../edits/edit_arrest.php?arrest_id=" . $_POST['arrest_id']);
                 break;
         }
         exit();
@@ -91,9 +91,6 @@ $arrests = $conn->query("SELECT * FROM arrests")->fetchAll(PDO::FETCH_ASSOC);
 </style>
         
 </head>
-<body class="font-sans antialiased text-white">
-    <div class="flex min-h-screen">
-
     <body class="font-sans antialiased text-white">
     <div class="flex min-h-screen">
         <!-- Sidebar -->
@@ -105,7 +102,7 @@ $arrests = $conn->query("SELECT * FROM arrests")->fetchAll(PDO::FETCH_ASSOC);
             </div>
             <nav>
                 <a href="dashboard.php" class="block py-2.5 px-4 rounded hover:bg-blue-600"><i class="fas fa-home mr-2"></i>Dashboard</a>
-                <a href="incidents.php" class="block py-2.5 px-4 rounded hover:bg-blue-600"><i class="fas fa-exclamation-triangle mr-2"></i>Active Calls</a>
+                <a href="incidents.php" class="block py-2.5 px-4 rounded hover:bg-blue-600"><i class="fas fa-exclamation-triangle mr-2"></i>Incidents</a>
                 <a href="reports.php" class="block py-2.5 px-4 rounded hover:bg-blue-600"><i class="fas fa-file-alt mr-2"></i>Reports</a>
                 <a href="map.php" class="block py-2.5 px-4 rounded hover:bg-blue-600"><i class="fas fa-map-marked-alt mr-2"></i>Map</a>
                 <!-- Dropdown for Searches -->
@@ -213,7 +210,7 @@ $arrests = $conn->query("SELECT * FROM arrests")->fetchAll(PDO::FETCH_ASSOC);
 
             <!-- Incidents Section -->
             <div class="mb-8">
-                <h2 class="text-xl font-semibold">Active Calls</h2>
+                <h2 class="text-xl font-semibold">Incidents</h2>
                 <div class="bg-gray-700 rounded-lg overflow-hidden shadow-lg mt-6">
                     <table class="min-w-full leading-normal">
                         <thead>

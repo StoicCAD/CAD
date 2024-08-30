@@ -1,4 +1,7 @@
 <?php
+
+
+
 // dept_style_config.php
 // Array holding the department-specific styles for backgrounds and logos
 $deptStyles = [
@@ -29,14 +32,11 @@ $deptStyles = [
 ];
 
 // Determine the user's department and set styles
-$dept = $user['dept'] ?? 'CIV'; // Default to 'CIV' or another logical default if not specified
-$backgroundImage = $deptStyles[$dept]['backgroundImage'] ?? 'default_background.jpg';
-$logoImage = $deptStyles[$dept]['logo'] ?? 'default_logo.png';
-
+$dept = $user['dept'] ?? 'default';
+$backgroundImage = $deptStyles[$dept]['backgroundImage'];
+$logoImage = $deptStyles[$dept]['logo'];
 // Set default style if department not matched
 $deptKey = $user['dept'] ?? 'default';
-$deptStyle = $deptStyles[$dept] ?? $deptStyles['CIV']; // Fallback to 'CIV' or any other default if the key does not exist
-
-
+$deptStyle = $deptStyles[$deptKey] ?? $deptStyles['default'];
 
 ?>
