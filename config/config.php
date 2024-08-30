@@ -14,6 +14,7 @@ define('DB_NAME', 'nats'); // Database name
 define('CLIENT_ID', '');
 define('CLIENT_SECRET', '-');
 define('REDIRECTURI', 'https://your-website/process-oauth.php');
+define('TOKEN', 'your_stoiccad_token_here');
 
 //Access the map at http://<server IP>:<server port>/webmap/
 // or 
