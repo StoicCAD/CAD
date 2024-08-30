@@ -14,6 +14,7 @@ define('DB_NAME', 'YOUR_HOST_DB'); // Database name
 define('CLIENT_ID', 'YOUR_DSICORD_CLIENT_ID');
 define('CLIENT_SECRET', 'YOUR_DSICORD_CLIENT_SECRET');
 define('REDIRECTURI', 'https://YOUR_DOMAIN_HERE/process-oauth.php');
+define('TOKEN', 'your_stoiccad_token_here');
 // Establish PDO database connection
 try {
     $dsn = "mysql:host=" . DB_HOST . ";dbname=" . DB_NAME . ";charset=utf8mb4";
