@@ -34,9 +34,9 @@
         $charges = $_POST['charges'];
         $bail_amount = $_POST['bail_amount'];
 
-        $stmt = $conn->prepare("INSERT INTO arrests (char_id, officer_name, arrest_date, charges, bail_amount) VALUES (?, ?, ?, ?, ?)");
+        $stmt = $conn->prepare("INSERT INTO arrests (character_id, officer_name, arrest_date, charges, bail_amount) VALUES (?, ?, ?, ?, ?)");
         if ($stmt->execute([$char_id, $officer_name, $arrest_date, $charges, $bail_amount])) {
-            header("Location: arrests.php");
+            header("Location: ../arrests.php");
             exit;
         } else {
             $error = "Failed to add arrest.";
