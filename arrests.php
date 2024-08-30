@@ -156,7 +156,7 @@
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <?= htmlspecialchars($arrest['arrest_id']); ?>
                             </td>
-                            <td><?= htmlspecialchars($arrest['char_id']); ?></td>
+                            <td><?= htmlspecialchars($arrest['character_id']); ?></td>
                             <td><?= htmlspecialchars($arrest['officer_name']); ?></td>
                             <td><?= htmlspecialchars($arrest['arrest_date']); ?></td>
                             <td><?= htmlspecialchars($arrest['charges']); ?></td>
