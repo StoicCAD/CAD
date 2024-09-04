@@ -1,10 +1,10 @@
 <?php
 
 
-$host = '127.0.0.1';
-$db_name = 'DBName';
-$username = '';
-$password = '!';
+$host = '127.0.0.1:3308';
+$db_name = 'nats';
+$username = 'discord';
+$password = '1Lollypop1!';
 
 try {
     $conn = new PDO("mysql:host=$host;dbname=$db_name", $username, $password);

@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MDT Form</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="custom-box">
+    <span class="close-button" onclick="display(false)">X</span>
+    <iframe src="https://html.thestoicbear.dev/Stoic/ndcore/login.php" title="MDT Form"></iframe>
+</div>
+<script>
+    function display(bool) {
+        if (bool) {
+            $(".custom-box").fadeIn("slow");
+        } else {
+            $(".custom-box").fadeOut("slow");
+        }
+    }
+    display(true); // Initial call to hide the box
+
+    window.addEventListener('message', function(event) {
+        var item = event.data;
+        console.log('Received message:', JSON.stringify(item));
+
+        if (item.type === "ui") {
+            display(item.status);
+        }
+    });
+
+    $(".close-button").click(function() {
+        display(false);
+        $.post(`https://${GetParentResourceName()}/close`);
+    });
+
+    document.onkeyup = function(data) {
+        if (data.which == 27) {
+            display(false);
+            $.post(`https://${GetParentResourceName()}/close`);
+        }
+    };
+</script>
+</body>
+</html>

@@ -33,7 +33,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['submit'])) {
     $report_date = date("Y-m-d H:i:s");
     $status = 'Open';
 
-    $stmt = $conn->prepare("INSERT INTO reports (char_id, author, perpetrator, report_date, report_content, status) VALUES (?, ?, ?, ?, ?, ?)");
+    $stmt = $conn->prepare("INSERT INTO reports (character_id, author, perpetrator, report_date, report_content, status) VALUES (?, ?, ?, ?, ?, ?)");
     if ($stmt->execute([$author_id, $subject, $perpetrator, $report_date, $content, $status])) {
         echo "<p>Report successfully submitted.</p>";
     } else {

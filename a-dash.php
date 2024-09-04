@@ -37,19 +37,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $stmt->execute([$_POST['user_id']]);
                 break;
             case 'edit_user':
-                header("Location: ../edits/edit_user.php?user_id=" . $_POST['user_id']);
+                header("Location: edits/edit_user.php?user_id=" . $_POST['user_id']);
                 break;
             case 'edit_incident':
-                header("Location: ../edits/edit_incident.php?incident_id=" . $_POST['incident_id']);
+                header("Location: edits/edit_incident.php?incident_id=" . $_POST['incident_id']);
                 break;
             case 'edit_report':
-                header("Location: ../edits/edit_report.php?report_id=" . $_POST['report_id']);
+                header("Location: edits/edit_report.php?report_id=" . $_POST['report_id']);
                 break;
             case 'edit_ticket':
-                header("Location: ../edits/edit_ticket.php?ticket_id=" . $_POST['ticket_id']);
+                header("Location: edits/edit_ticket.php?ticket_id=" . $_POST['ticket_id']);
                 break;
             case 'edit_arrest':
-                header("Location: ../edits/edit_arrest.php?arrest_id=" . $_POST['arrest_id']);
+                header("Location: edits/edit_arrest.php?arrest_id=" . $_POST['arrest_id']);
                 break;
         }
         exit();
@@ -88,13 +88,30 @@ $arrests = $conn->query("SELECT * FROM arrests")->fetchAll(PDO::FETCH_ASSOC);
             background: #4b5563; /* Matching Tailwind's gray-700 */
             border-radius: 0 0 0.5rem 0.5rem;
         }
+        .sidebar {
+            transition: transform 0.3s ease-out;
+            transform: translateX(0);
+            z-index: 10;
+        }
+        .hidden-sidebar {
+            transform: translateX(-100%);
+        }
+        .sidebar-button {
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            z-index: 20;
+        }
 </style>
         
 </head>
-    <body class="font-sans antialiased text-white">
+<body class="font-sans antialiased text-white">
     <div class="flex min-h-screen">
+        <!-- Toggle Button -->
+        <button onclick="toggleSidebar()" class="sidebar-button text-white text-xl bg-gray-800 px-4 py-2 rounded">&#9776;</button>
+        
         <!-- Sidebar -->
-        <div class="bg-gray-800 w-64 space-y-6 py-7 px-2 fixed inset-y-0 left-0 overflow-y-auto">
+        <div id="sidebar" class="bg-gray-800 w-64 space-y-6 py-7 px-2 fixed inset-y-0 left-0 overflow-y-auto sidebar">
             <div class="text-center">
                 <img src="<?php echo htmlspecialchars($user['avatar_url']); ?>" alt="User Avatar" class="h-20 w-20 rounded-full mx-auto">
                 <h2 class="mt-4 mb-2 font-semibold"><?php echo htmlspecialchars($user['username']); ?></h2>
@@ -210,7 +227,7 @@ $arrests = $conn->query("SELECT * FROM arrests")->fetchAll(PDO::FETCH_ASSOC);
 
             <!-- Incidents Section -->
             <div class="mb-8">
-                <h2 class="text-xl font-semibold">Incidents</h2>
+                <h2 class="text-xl font-semibold">Active Calls</h2>
                 <div class="bg-gray-700 rounded-lg overflow-hidden shadow-lg mt-6">
                     <table class="min-w-full leading-normal">
                         <thead>
@@ -420,6 +437,29 @@ $arrests = $conn->query("SELECT * FROM arrests")->fetchAll(PDO::FETCH_ASSOC);
             </div>
         </div>
     </div>
+    <script>
+        function toggleSidebar() {
+            var sidebar = document.getElementById("sidebar");
+            var mainContent = document.getElementById("mainContent");
+            sidebar.classList.toggle("hidden-sidebar");
+            mainContent.classList.toggle("full-width");
+        }
+        // JavaScript to handle dropdown behavior
+        document.addEventListener('DOMContentLoaded', function () {
+            const dropdown = document.querySelector('.dropdown');
+            const dropdownMenu = document.querySelector('.dropdown-menu');
+
+            dropdown.addEventListener('click', function (event) {
+                event.stopPropagation();
+                dropdownMenu.style.display = dropdownMenu.style.display === 'block' ? 'none' : 'block';
+            });
+
+            window.addEventListener('click', function () {
+                if (dropdownMenu.style.display === 'block') {
+                    dropdownMenu.style.display = 'none';
+                }
+            });
+        });
+    </script>
 </body>
 </html>
-

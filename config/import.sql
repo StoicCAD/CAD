@@ -1,9 +1,4 @@
 
-ALTER TABLE `characters`
-ADD COLUMN `mugshot` LONGTEXT DEFAULT '[]',
-ADD COLUMN `driverslicense` VARCHAR(255) DEFAULT NULL;
-
--- Dumping structure for table nats.arrests
 CREATE TABLE IF NOT EXISTS `arrests` (
   `arrest_id` int(11) NOT NULL AUTO_INCREMENT,
   `character_id` int(11) NOT NULL,
@@ -14,7 +9,24 @@ CREATE TABLE IF NOT EXISTS `arrests` (
   PRIMARY KEY (`arrest_id`),
   KEY `character_id` (`character_id`),
   CONSTRAINT `arrests_ibfk_1` FOREIGN KEY (`character_id`) REFERENCES `characters` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS `characters` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `discord` varchar(50) DEFAULT NULL,
+  `steamid` varchar(50) DEFAULT NULL,
+  `first_name` varchar(50) DEFAULT NULL,
+  `last_name` varchar(50) DEFAULT NULL,
+  `twitter_name` varchar(50) DEFAULT NULL,
+  `dob` varchar(50) DEFAULT NULL,
+  `gender` varchar(50) DEFAULT NULL,
+  `dept` varchar(50) DEFAULT NULL,
+  `level` text DEFAULT NULL,
+  `lastLoc` varchar(250) DEFAULT NULL,
+  `mugshot` longtext DEFAULT '[]',
+  `driverslicense` varchar(255) DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8mb4;
 
 CREATE TABLE IF NOT EXISTS `civilians` (
   `civilian_id` int(10) NOT NULL AUTO_INCREMENT,
@@ -38,14 +50,11 @@ CREATE TABLE IF NOT EXISTS `incidents` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `title` varchar(255) NOT NULL,
   `description` text DEFAULT NULL,
-  `reported_by` int(11) DEFAULT NULL,
   `location` varchar(255) DEFAULT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `status` varchar(255) DEFAULT 'Open',
-  PRIMARY KEY (`id`),
-  KEY `reported_by` (`reported_by`),
-  CONSTRAINT `incidents_ibfk_1` FOREIGN KEY (`reported_by`) REFERENCES `users` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=54 DEFAULT CHARSET=utf8mb4;
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=63 DEFAULT CHARSET=utf8mb4;
 
 CREATE TABLE IF NOT EXISTS `reports` (
   `report_id` int(11) NOT NULL AUTO_INCREMENT,
@@ -58,7 +67,7 @@ CREATE TABLE IF NOT EXISTS `reports` (
   PRIMARY KEY (`report_id`),
   KEY `character_id` (`character_id`),
   CONSTRAINT `reports_ibfk_1` FOREIGN KEY (`character_id`) REFERENCES `characters` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8mb4;
 
 CREATE TABLE IF NOT EXISTS `tickets` (
   `ticket_id` int(11) NOT NULL AUTO_INCREMENT,
@@ -87,5 +96,6 @@ CREATE TABLE IF NOT EXISTS `users` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `discord_id` (`discord_id`),
   UNIQUE KEY `email` (`email`)
-) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4;
+
 

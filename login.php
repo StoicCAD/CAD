@@ -1,11 +1,33 @@
 <?php
 
+
+// Set headers and session configurations
+header("Access-Control-Allow-Origin: *");
+header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS");
+header("Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With");
+
+$secure = true;
+$httponly = true;
+$samesite = 'None';
+$lifetime = 600;
+
+if (PHP_VERSION_ID < 70300) {
+    session_set_cookie_params($lifetime, '/; samesite='.$samesite, $_SERVER['HTTP_HOST'], $secure, $httponly);
+} else {
+    session_set_cookie_params([
+        'lifetime' => $lifetime,
+        'path' => '/',
+        'domain' => $_SERVER['HTTP_HOST'],
+        'secure' => $secure,
+        'httponly' => $httponly,
+        'samesite' => $samesite
+    ]);
+}
+
 require 'config/db.php';  // This will use the connection setup from db.php
 include_once 'config/config.php';
-
 $clientId = CLIENT_ID;
 $redirectUri = REDIRECTURI;
-$token = TOKEN;
 
 if (!isset($_SESSION['oauth2state'])) {
     $_SESSION['oauth2state'] = hash('sha256', microtime(TRUE).rand().$_SERVER['REMOTE_ADDR']);
@@ -40,7 +62,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['email'], $_POST['passw
     $user = $stmt->fetch();
 
     // Check if user exists and password is correct
-    if ($user && password_verify($password, $user['password'])) {
+    if (!$user) {
+        $_SESSION['error'] = "Invalid user.";
+    } elseif (!password_verify($password, $user['password'])) {
+        $_SESSION['error'] = "Wrong password.";
+    } else {
         // Set session variables
         $_SESSION['user_id'] = $user['id'];
         $_SESSION['username'] = $user['username'];
@@ -51,11 +77,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['email'], $_POST['passw
         // Redirect to the dashboard
         header("Location: dashboard.php");
         exit;
-    } else {
-        $error = "Invalid login credentials.";
     }
 }
+
+// Clear the error message after displaying
+$error = isset($_SESSION['error']) ? $_SESSION['error'] : '';
+unset($_SESSION['error']);
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
