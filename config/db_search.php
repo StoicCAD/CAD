@@ -19,15 +19,8 @@ if (PHP_VERSION_ID < 70300) {
     ]);
 }
 
-$host = '76.59';
-$db_name = 'qbtest';
-$username = 'discord';
-$password = '';
+// Include database connection details
+require_once('database.php');
 
-try {
-    $conn = new PDO("mysql:host=$host;dbname=$db_name", $username, $password);
-    $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-} catch(PDOException $exception) {
-    echo "Connection error: " . $exception->getMessage();
-}
+// Now you can use $conn PDO object for database operations
 ?>

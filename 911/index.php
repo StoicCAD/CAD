@@ -1,66 +1,59 @@
 <?php
+// Include configuration file
+require_once '../config.php';
+
+// Set CORS headers
+header("Access-Control-Allow-Origin: *");
+header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS");
+header("Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With");
+
+// Session configuration
+$secure = true;
+$httponly = true;
+$samesite = 'none';
+$lifetime = 600;
+
+if (PHP_VERSION_ID < 70300) {
+    session_set_cookie_params($lifetime, '/; samesite=' . $samesite, $_SERVER['HTTP_HOST'], $secure, $httponly);
+} else {
+    session_set_cookie_params([
+        'lifetime' => $lifetime,
+        'path' => '/',
+        'domain' => $_SERVER['HTTP_HOST'],
+        'secure' => $secure,
+        'httponly' => $httponly,
+        'samesite' => $samesite
+    ]);
+}
+
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    // Set CORS headers
-    header("Access-Control-Allow-Origin: *");
-    header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS");
-    header("Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With");
-
-    $secure = true;
-    $httponly = true;
-    $samesite = 'none';
-    $lifetime = 600;
-
-    if (PHP_VERSION_ID < 70300) {
-        session_set_cookie_params($lifetime, '/; samesite=' . $samesite, $_SERVER['HTTP_HOST'], $secure, $httponly);
-    } else {
-        session_set_cookie_params([
-            'lifetime' => $lifetime,
-            'path' => '/',
-            'domain' => $_SERVER['HTTP_HOST'],
-            'secure' => $secure,
-            'httponly' => $httponly,
-            'samesite' => $samesite
-        ]);
-    }
-
-    $servername = 'YOURHOST';
-    $username = 'YOURUSER';
-    $password = "YOURPW";
-    $dbname = "YOURDB";
-
-    // Create database connection
-    $conn = new mysqli($servername, $username, $password, $dbname);
-
-    // Check connection
-    if ($conn->connect_error) {
-        die("Connection failed: " . $conn->connect_error);
-    }
+    // Create database connection using PDO from config.php
+    global $conn;
 
     // Prepare an INSERT statement
-    $sql = "INSERT INTO incidents (title, description, reported_by) VALUES (?, ?, ?)";
+    $sql = "INSERT INTO incidents (title, description) VALUES (?, ?)";
     $stmt = $conn->prepare($sql);
     if ($stmt === false) {
-        die('MySQL prepare error: ' . $conn->error);
+        die('PDO prepare error: ' . $conn->errorInfo()[2]);
     }
 
     // Bind parameters
     $title = $_POST['title'];
     $description = $_POST['description'];
-    $reported_by = $_POST['reported_by'];
 
-    $stmt->bind_param("ssi", $title, $description, $reported_by);
+    $stmt->bindParam(1, $title, PDO::PARAM_STR);
+    $stmt->bindParam(2, $description, PDO::PARAM_STR);
 
     // Execute the statement
     $message = '';
     if (!$stmt->execute()) {
-        $message = 'Execute error: ' . $stmt->error;
+        $message = 'Execute error: ' . implode(' ', $stmt->errorInfo());
     } else {
         $message = "New incident reported successfully";
     }
 
-    // Close statement and connection
-    $stmt->close();
-    $conn->close();
+    // Close statement
+    $stmt = null;
 }
 ?>
 <!DOCTYPE html>
@@ -71,8 +64,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <title>911 Incident Report Form</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.0.3/dist/tailwind.min.css" rel="stylesheet">
 </head>
-<body class="bg-gray-800 bg-opacity-75 flex items-center justify-center min-h-screen">
-    <div class="w-full max-w-2xl p-6 bg-gray-900 rounded-lg shadow-xl">
+<body class="bg-gray-800 flex items-center justify-center min-h-screen" style="background-color: rgba(31, 41, 55, 0.0);">
+
+    <div class="w-full max-w-2xl p-6 bg-gray-900 rounded-xl shadow-xl">
         <form id="incidentForm" method="POST" class="space-y-6 animate-fade-in-up">
             <h1 class="text-2xl font-bold text-center text-gray-100">911 Incident Report</h1>
             <?php if (!empty($message)): ?>
@@ -90,7 +84,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 <textarea id="description" name="description" rows="5" placeholder="Detailed description of the incident"
                           class="mt-1 block w-full px-4 py-2 bg-gray-800 text-gray-300 border border-gray-700 rounded-md shadow-sm placeholder-gray-500 focus:outline-none focus:ring-blue-500 focus:border-blue-500"></textarea>
             </div>
-            <input type="hidden" name="reported_by" value="1">
             <button type="submit" class="w-full px-4 py-2 text-lg font-bold text-white bg-blue-600 rounded hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50">
                 Submit Report
             </button>

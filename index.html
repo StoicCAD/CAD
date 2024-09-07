@@ -6,117 +6,129 @@
     <title>StoicCAD | Police Dispatch System</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.0.3/dist/tailwind.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css">
-    <script defer src="Stoic/cad/config.js"></script> <!-- Include the config script with defer to ensure it loads after the HTML is parsed -->
+    <script defer src="Stoic/cad/config.js"></script>
 </head>
 <body class="bg-gray-800 text-white font-sans">
 
     <!-- Navigation Bar -->
-    <header class="px-5 py-4 shadow-lg">
-        <div class="container mx-auto flex justify-between items-center">
-            <img src="" alt="Police Logo" class="h-10" id="logo">
+    <header class="bg-gray-900 shadow-lg">
+        <div class="container mx-auto flex justify-between items-center py-4 px-6">
+            <img src="" alt="Police Logo" class="h-12" id="logo">
             <nav>
-                <button id="loginButton" class="text-white font-bold py-2 px-4 rounded transition duration-300">Login</button>
-                <button id="toggleInfoButton" class="text-white font-bold py-2 px-4 rounded transition duration-300">Toggle Info</button>
+                <button id="loginButton" class="text-white font-bold py-2 px-4 rounded-lg bg-blue-800 hover:bg-blue-700 transition duration-300">Login</button>
+                <button id="toggleInfoButton" class="text-white font-bold py-2 px-4 rounded-lg bg-blue-800 hover:bg-blue-700 transition duration-300 ml-4">Toggle Info</button>
             </nav>
         </div>
     </header>
 
-<!-- Main Content Area -->
-<div class="text-center p-8 border border-gray-700 rounded-lg bg-gray-900 shadow-lg mt-6 mx-auto max-w-4xl">
-    <h1 class="text-3xl mb-2 font-bold uppercase tracking-widest" id="mainTitle"></h1>
-    <i class="fa-4x mb-3" id="mainIcon"></i>
-    <div class="flex justify-center">
-        <img src="https://img.thestoicbear.dev/images/Stoic-2024-05-08_23-57-50-663c117ecd496.png" alt="StoicCAD Logo" class="h-32 mx-auto"> <!-- Logo here -->
-    </div>
-    <p class="mb-4 text-lg font-light" id="descriptionText"></p>
-    <div class="flex justify-center space-x-4">
-        <a href="login.php" class="text-white font-bold py-2 px-4 rounded transition duration-300">
-            <button id="cadLoginButton">Login to CAD</button>
-        </a>
-        <a href="homepage.html" class="text-white font-bold py-2 px-4 rounded transition duration-300">
-            <button id="homeButton">Return to Homepage</button>
-        </a>
-    </div>
-</div>
+    <!-- Main Content Area -->
+    <main class="text-center p-8 border border-gray-700 rounded-lg bg-gray-900 shadow-lg mt-6 mx-auto max-w-4xl">
+        <h1 class="text-4xl mb-2 font-bold uppercase tracking-wider" id="mainTitle"></h1>
+        <i class="fa-4x mb-3" id="mainIcon"></i>
+        <p class="mb-4 text-lg font-light" id="descriptionText"></p>
+        <div class="flex justify-center space-x-4">
+            <a href="login.php" class="text-white font-bold py-2 px-4 rounded-lg bg-blue-800 hover:bg-blue-700 transition duration-300">
+                <button id="cadLoginButton">Login to CAD</button>
+            </a>
+            <a href="homepage.html" class="text-white font-bold py-2 px-4 rounded-lg bg-blue-800 hover:bg-blue-700 transition duration-300">
+                <button id="homeButton">Return to Homepage</button>
+            </a>
+        </div>
+    </main>
 
-	<!-- Info Cards Section -->
-	<div class="container mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 p-4">
-		<div class="p-6 max-w-sm mx-auto bg-blue-800 rounded-xl shadow-md space-y-2 hidden" id="infoCard1">
-			<div class="text-lg font-medium"></div>
-		</div>
-		<div class="p-6 max-w-sm mx-auto bg-blue-800 rounded-xl shadow-md space-y-2 hidden" id="infoCard2">
-			<div class="text-lg font-medium"></div>
-		</div>
-		<div class="p-6 max-w-sm mx-auto bg-blue-800 rounded-xl shadow-md space-y-2 hidden" id="infoCard3">
-			<div class="text-lg font-medium"></div>
-		</div>
-	</div>
+    <!-- Info Cards Section -->
+    <section class="container mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-6">
+        <div class="p-6 bg-blue-800 rounded-xl shadow-md space-y-4 hidden" id="infoCard1">
+            <h3 class="text-xl font-semibold">Latest Dispatch Tools</h3>
+            <p>Stay updated with the latest dispatch tools and enhancements.</p>
+        </div>
+        <div class="p-6 bg-blue-800 rounded-xl shadow-md space-y-4 hidden" id="infoCard2">
+            <h3 class="text-xl font-semibold">Self Hosted</h3>
+            <p>Host your own system and have full control over your data.</p>
+        </div>
+        <div class="p-6 bg-blue-800 rounded-xl shadow-md space-y-4 hidden" id="infoCard3">
+            <h3 class="text-xl font-semibold">Open Source</h3>
+            <p>Open source software allows for customization and transparency.</p>
+        </div>
+    </section>
 
+    <!-- Features Section -->
+    <section class="container mx-auto p-6 bg-gray-900 rounded-lg shadow-md mt-6 max-w-4xl">
+        <h2 class="text-3xl font-bold mb-4 text-blue-300">Features</h2>
+        <ul class="list-disc list-inside space-y-2 text-lg font-light">
+            <li>Open Source</li>
+            <li>PHP Base</li>
+            <li>Easy to use</li>
+            <li>ID Cards</li>
+            <li>Live Map</li>
+            <li>Standalone / QBCore / ox-core / NDCore / NAT2k</li>
+            <li>911 Plugins (With all phones in game as 911 stations)</li>
+            <li>Ticket Plugins</li>
+        </ul>
+    </section>
 
+    <script>
+        // config.js
+        const config = {
+            logo: "https://img.thestoicbear.dev/images/Stoic-2024-04-29_20-37-57-663005250621d.png",
+            buttonColor: "bg-blue-800",
+            buttonHoverColor: "hover:bg-blue-700",
+            textColor: "text-blue-300",
+            iconClass: "fas fa-broadcast-tower",
+            titleText: "StoicCAD Dispatch System",
+            descriptionText: "Advanced dispatch solution designed to enhance operational efficiency and response times.",
+            cards: [
+                {
+                    id: "infoCard1",
+                    title: "Latest Dispatch Tools",
+                    visible: true
+                },
+                {
+                    id: "infoCard2",
+                    title: "Self Hosted",
+                    visible: true
+                },
+                {
+                    id: "infoCard3",
+                    title: "Open Source",
+                    visible: true
+                }
+            ]
+        };
+
+        function applyConfig() {
+            document.getElementById('logo').src = config.logo;
+            document.getElementById('mainTitle').textContent = config.titleText;
+            document.getElementById('mainTitle').classList.add(config.textColor);
+            document.getElementById('descriptionText').textContent = config.descriptionText;
+            document.getElementById('mainIcon').className = config.iconClass + " fa-4x mb-3";
+
+            document.querySelectorAll('button').forEach(button => {
+                button.classList.add(config.buttonColor, config.buttonHoverColor);
+            });
+
+            config.cards.forEach(card => {
+                const element = document.getElementById(card.id);
+                element.querySelector('h3').textContent = card.title;
+                if (card.visible) {
+                    element.classList.remove('hidden');
+                } else {
+                    element.classList.add('hidden');
+                }
+            });
+        }
+
+        function toggleInfoCards() {
+            ['infoCard1', 'infoCard2', 'infoCard3'].forEach(cardId => {
+                const card = document.getElementById(cardId);
+                card.classList.toggle('hidden');
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            applyConfig();
+            document.getElementById('toggleInfoButton').addEventListener('click', toggleInfoCards);
+        });
+    </script>
 </body>
-<script>
-    // config.js
-const config = {
-    logo: "http://img.thestoicbear.dev/images/Stoic-2024-05-08_23-57-50-663c117ecd496.png",
-    buttonColor: "bg-blue-800",
-    buttonHoverColor: "hover:bg-blue-700",
-    textColor: "text-blue-300",
-    iconClass: "fas fa-broadcast-tower",
-    titleText: "StoicCAD Dispatch System",
-    descriptionText: "Advanced dispatch solution designed to enhance operational efficiency and response times.",
-    cards: [
-        {
-            id: "infoCard1",
-            title: "Latest Dispatch Tools",
-            visible: false
-        },
-        {
-            id: "infoCard2",
-            title: "Self Hosted",
-            visible: false
-        },
-        {
-            id: "infoCard3",
-            title: "Open Source",
-            visible: false
-        }
-    ]
-};
-
-function applyConfig() {
-    document.getElementById('logo').src = config.logo;
-    document.getElementById('mainTitle').textContent = config.titleText;
-    document.getElementById('mainTitle').className += ` ${config.textColor}`;
-    document.getElementById('descriptionText').textContent = config.descriptionText;
-    document.getElementById('mainIcon').className = config.iconClass + " fa-4x mb-3";
-
-    document.querySelectorAll('button').forEach(button => {
-        button.className += ` ${config.buttonColor} ${config.buttonHoverColor}`;
-    });
-
-    config.cards.forEach(card => {
-        const element = document.getElementById(card.id);
-        element.querySelector('div').textContent = card.title;
-        if (card.visible) {
-            element.classList.remove('hidden');
-        } else {
-            element.classList.add('hidden');
-        }
-    });
-}
-
-document.addEventListener('DOMContentLoaded', applyConfig);
-function toggleInfoCards() {
-    ['infoCard1', 'infoCard2', 'infoCard3'].forEach(cardId => {
-        const card = document.getElementById(cardId);
-        card.classList.toggle('hidden');
-    });
-}
-
-document.addEventListener('DOMContentLoaded', () => {
-    applyConfig();
-    document.getElementById('toggleInfoButton').addEventListener('click', toggleInfoCards);
-});
-
-</script>
 </html>

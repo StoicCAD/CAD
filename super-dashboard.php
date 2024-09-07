@@ -45,7 +45,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Super Admin Dashboard - MDT</title>
+    <title>Super Dashboard - MDT</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.0.3/dist/tailwind.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css">
     <style>
@@ -66,7 +66,7 @@
             border-radius: 0 0 0.5rem 0.5rem;
         }
         .sidebar {
-            transition: transform 1.3s ease-out;
+            transition: transform 0.3s ease-out;
             transform: translateX(0);
             z-index: 10;
         }
@@ -80,7 +80,7 @@
             z-index: 20;
         }
         .content {
-            transition: margin-left 1.4s ease-out;
+            transition: margin-left 0.9s ease-out;
             margin-right: 120px; /* match sidebar width when visible */
         }
         .full-width {
@@ -96,19 +96,13 @@
         <!-- Sidebar -->
         <div id="sidebar" class="bg-gray-800 w-64 space-y-6 py-7 px-2 fixed inset-y-0 left-0 overflow-y-auto sidebar">
             <div class="text-center">
-                <!-- Ensure values are not null before using htmlspecialchars -->
-                <img src="<?php echo htmlspecialchars($user['avatar_url'] ?? 'default_avatar.png'); ?>" alt="User Avatar" class="h-20 w-20 rounded-full mx-auto">
-                <h2 class="mt-4 mb-2 font-semibold"><?php echo htmlspecialchars($user['username'] ?? 'Unknown User'); ?></h2>
-                <p>
-                    <?php echo htmlspecialchars($user['dept'] ?? 'No Department'); ?>, 
-                    <?php echo htmlspecialchars($user['rank'] ?? 'No Rank'); ?><br>
-                    Badge #<?php echo htmlspecialchars($user['badge_number'] ?? 'No Badge'); ?>
-                </p>
+                <img src="<?php echo htmlspecialchars($user['avatar_url']); ?>" alt="User Avatar" class="h-20 w-20 rounded-full mx-auto">
+                <h2 class="mt-4 mb-2 font-semibold"><?php echo htmlspecialchars($user['username']); ?></h2>
+                <p><?php echo htmlspecialchars($user['dept']); ?>, <?php echo htmlspecialchars($user['rank']); ?><br>Badge #<?php echo htmlspecialchars($user['badge_number']); ?></p>
             </div>
-
             <nav>
                 <a href="dashboard.php" class="block py-2.5 px-4 rounded hover:bg-blue-600"><i class="fas fa-home mr-2"></i>Dashboard</a>
-                <a href="incidents.php" class="block py-2.5 px-4 rounded hover:bg-blue-600"><i class="fas fa-exclamation-triangle mr-2"></i>Active Calls</a>
+                <a href="incidents.php" class="block py-2.5 px-4 rounded hover:bg-blue-600"><i class="fas fa-exclamation-triangle mr-2"></i>Incidents</a>
                 <a href="reports.php" class="block py-2.5 px-4 rounded hover:bg-blue-600"><i class="fas fa-file-alt mr-2"></i>Reports</a>
                 <a href="map.php" class="block py-2.5 px-4 rounded hover:bg-blue-600"><i class="fas fa-map-marked-alt mr-2"></i>Map</a>
                 <!-- Dropdown for Searches -->
@@ -137,6 +131,7 @@
             </nav>
         </div>
         <div>
+
         <!-- Main Content -->
         <!-- Main Content -->
         <div id="mainContent" class="flex-1 flex flex-col ml-64 p-10 content">
@@ -186,7 +181,6 @@
     </div>
     </div>
     <script>
-
         function toggleSidebar() {
             var sidebar = document.getElementById("sidebar");
             var mainContent = document.getElementById("mainContent");
@@ -210,6 +204,5 @@
             });
         });
     </script>
-
 </body>
 </html>

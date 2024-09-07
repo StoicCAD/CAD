@@ -1,6 +1,7 @@
 <?php
 session_start();
-require_once '../config/db.php';
+require_once '../config/db.php'; // Ensure this file contains your PDO connection logic
+
 
 if (!isset($_GET['report_id']) || !is_numeric($_GET['report_id'])) {
     echo "Invalid report ID.";

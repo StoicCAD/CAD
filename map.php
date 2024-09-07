@@ -1,5 +1,6 @@
 <?php
     require 'config/config.php';
+
     require 'config/db.php';
 
     if (!isset($_SESSION['user_id'])) {
@@ -100,7 +101,7 @@
 
             <nav>
                 <a href="dashboard.php" class="block py-2.5 px-4 rounded hover:bg-blue-600"><i class="fas fa-home mr-2"></i>Dashboard</a>
-                <a href="incidents.php" class="block py-2.5 px-4 rounded hover:bg-blue-600"><i class="fas fa-exclamation-triangle mr-2"></i>Active Calls</a>
+                <a href="incidents.php" class="block py-2.5 px-4 rounded hover:bg-blue-600"><i class="fas fa-exclamation-triangle mr-2"></i>Incidents</a>
                 <a href="reports.php" class="block py-2.5 px-4 rounded hover:bg-blue-600"><i class="fas fa-file-alt mr-2"></i>Reports</a>
                 <a href="map.php" class="block py-2.5 px-4 rounded hover:bg-blue-600"><i class="fas fa-map-marked-alt mr-2"></i>Map</a>
                 <!-- Dropdown for Searches -->
@@ -136,7 +137,7 @@
         <h1 class="font-bold text-3xl mb-6">Active Calls</h1>
         <div class="bg-gray-900 mt-6 p-6 rounded-lg shadow-md overflow-hidden">
             <h2 class="text-xl font-semibold mb-4">Web Content</h2>
-            <iframe src="<?php echo htmlspecialchars($iframeUrl); ?>" style="width:800px; height:500px; border:400px;"></iframe>
+            <iframe src="<?php echo htmlspecialchars($iframeUrl); ?>" style="width:100%; height:500px; border:200px;"></iframe>
         </div>
     </div>
     </div>
