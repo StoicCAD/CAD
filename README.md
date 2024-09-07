@@ -1,7 +1,5 @@
-<p align="center">
-  <img src="https://github.com/TheStoicBear/StoicCAD/assets/112611821/fa4e54af-834a-4589-8b64-c8e2d0e0435a" alt="logo">
-</p>
 
+![1](https://github.com/user-attachments/assets/935e2140-d53d-4569-aacf-55bb2faaa005)
 
 ![image](https://github.com/TheStoicBear/StoicCAD/assets/112611821/6ba5a894-36f3-4ae6-8fe8-db41199d0c1b)
 
