@@ -1,26 +1,4 @@
 <?php
-    // // Set headers and session configurations
-    // header("Access-Control-Allow-Origin: *");
-    // header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS");
-    // header("Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With");
-
-    // $secure = true;
-    // $httponly = true;
-    // $samesite = 'None';
-    // $lifetime = 600;
-
-    // if (PHP_VERSION_ID < 70300) {
-    //     session_set_cookie_params($lifetime, '/; samesite='.$samesite, $_SERVER['HTTP_HOST'], $secure, $httponly);
-    // } else {
-    //     session_set_cookie_params([
-    //         'lifetime' => $lifetime,
-    //         'path' => '/',
-    //         'domain' => $_SERVER['HTTP_HOST'],
-    //         'secure' => $secure,
-    //         'httponly' => $httponly,
-    //         'samesite' => $samesite
-    //     ]);
-    // }
     session_start();
     require_once 'config/db.php';
 
@@ -29,9 +7,11 @@
         exit;
     }
 
+    // User verification
     $stmt = $conn->prepare("SELECT username, avatar_url, dept, rank, badge_number, super FROM users WHERE id = ?");
     $stmt->execute([$_SESSION['user_id']]);
     $user = $stmt->fetch(PDO::FETCH_ASSOC);
+
 
     if (!$user) {
         echo "User not found.";
@@ -42,58 +22,58 @@
 
     $search_query = '';
     $results = [];
-
+    
     if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['search_query'])) {
         $search_query = trim($_POST['search_query']);
-        $search_stmt = $conn->prepare("SELECT * FROM nd_characters WHERE firstname LIKE :query OR lastname LIKE :query OR dob LIKE :query OR gender LIKE :query OR mugshot LIKE :query");
+        
+        $search_stmt = $conn->prepare("SELECT id, name, charinfo FROM players WHERE name LIKE :query");
         $search_stmt->execute([':query' => "%$search_query%"]);
         $results = $search_stmt->fetchAll(PDO::FETCH_ASSOC);
 
-        foreach ($results as $key => $person) {
-            $char_id = $person['charid'];
+        foreach ($results as $key => $player) {
+            $citizenid = $player['id'];
+            $charinfo = json_decode($player['charinfo'], true) ?? [];
 
-            // Fetch arrest records
-            $arrest_stmt = $conn->prepare("SELECT * FROM arrests WHERE char_id = ?");
-            $arrest_stmt->execute([$char_id]);
+            $results[$key]['charid'] = $player['id']; // Ensuring charid is always set to the player's ID or some default.
+            $results[$key]['firstname'] = $charinfo['name'] ?? 'Unknown';
+            $results[$key]['lastname'] = $charinfo['lastname'] ?? 'Unknown';
+            $results[$key]['dob'] = $charinfo['dob'] ?? 'Unknown';
+            $results[$key]['gender'] = isset($charinfo['gender']) ? ($charinfo['gender'] === 'male' ? 'Male' : 'Female') : 'Unknown';
+            $results[$key]['driverslicense'] = $charinfo['driverslicense'] ?? 'N/A';
+            $results[$key]['mugshot'] = !empty($charinfo['mugShot']) ? $charinfo['mugShot'] : 'path/to/default/mugshot.png'; // Default mugshot
+            
+
+            $arrest_stmt = $conn->prepare("SELECT * FROM arrests WHERE citizenid = ?");
+            $arrest_stmt->execute([$citizenid]);
             $results[$key]['arrests'] = $arrest_stmt->fetchAll(PDO::FETCH_ASSOC);
 
-            // Fetch ticket records
-            $ticket_stmt = $conn->prepare("SELECT * FROM tickets WHERE char_id = ?");
-            $ticket_stmt->execute([$char_id]);
+            $ticket_stmt = $conn->prepare("SELECT * FROM tickets WHERE citizenid = ?");
+            $ticket_stmt->execute([$citizenid]);
             $results[$key]['tickets'] = $ticket_stmt->fetchAll(PDO::FETCH_ASSOC);
 
-            // Fetch report records
-            $report_stmt = $conn->prepare("SELECT * FROM reports WHERE char_id = ?");
-            $report_stmt->execute([$char_id]);
+            $report_stmt = $conn->prepare("SELECT * FROM reports WHERE citizenid = ?");
+            $report_stmt->execute([$citizenid]);
             $results[$key]['reports'] = $report_stmt->fetchAll(PDO::FETCH_ASSOC);
         }
     }
 
-    // Search and fetch results
-    if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['search_query'])) {
-        $search_query = trim($_POST['search_query']);
-        $search_stmt = $conn->prepare("SELECT * FROM nd_characters WHERE firstname LIKE :query OR lastname LIKE :query OR dob LIKE :query OR gender LIKE :query OR mugshot LIKE :query");
-        $search_stmt->execute([':query' => "%$search_query%"]);
-        $results = $search_stmt->fetchAll(PDO::FETCH_ASSOC);
-    }
-    // Default positions for the full name
-    $fullNameTop = '180px';  // Change this in PHP as needed
-    $fullNameLeft = '45%';  // Change this in PHP as needed
+
+
+    // Default positions for display elements, which might be useful for CSS styling in your application
+    $fullNameTop = '180px';
+    $fullNameLeft = '45%';
     $firstNameTop = '70px';
     $firstNameLeft = '-10%';
-
     $lastNameTop = '70px';
     $lastNameLeft = '10%';
-
     $dobTop = '127px';
     $dobLeft = '-10%';
-
     $genderTop = '127px';
     $genderLeft = '5%';
-
     $driversLicenseTop = '180px';
     $driversLicenseLeft = '30%';
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -120,7 +100,7 @@
             border-radius: 0 0 0.5rem 0.5rem;
         }
         .sidebar {
-            transition: transform 0.3s ease-out;
+            transition: transform 1.3s ease-out;
             transform: translateX(0);
             z-index: 10;
         }
@@ -134,7 +114,7 @@
             z-index: 20;
         }
         .content {
-            transition: margin-left 0.3s ease-out;
+            transition: margin-left 1.4s ease-out;
             margin-left: 256px; /* Initial margin to accommodate sidebar */
         }
         .full-width {
@@ -210,12 +190,12 @@
         }
         .signature {
             font-family: 'Great Vibes', cursive;
-            font-size: 24px;
+            font-size: 20px;
             color: #fff; /* Adjust as needed */
             position: absolute;
-            left: 50%; /* Center horizontally */
+            left: 10%; /* Center horizontally */
             top: 150px; /* Position where it fits on your background */
-            transform: translateX(-50%); /* Center align */
+            transform: translateX(-45%); /* Center align */
         }
     </style>
 </head>
@@ -227,15 +207,21 @@
         <!-- Sidebar -->
         <div id="sidebar" class="bg-gray-800 w-64 space-y-6 py-7 px-2 fixed inset-y-0 left-0 overflow-y-auto sidebar">
             <div class="text-center">
-                <img src="<?php echo htmlspecialchars($user['avatar_url']); ?>" alt="User Avatar" class="h-20 w-20 rounded-full mx-auto">
-                <h2 class="mt-4 mb-2 font-semibold"><?php echo htmlspecialchars($user['username']); ?></h2>
-                <p><?php echo htmlspecialchars($user['dept']); ?>, <?php echo htmlspecialchars($user['rank']); ?><br>Badge #<?php echo htmlspecialchars($user['badge_number']); ?></p>
+                <!-- Ensure values are not null before using htmlspecialchars -->
+                <img src="<?php echo htmlspecialchars($user['avatar_url'] ?? 'default_avatar.png'); ?>" alt="User Avatar" class="h-20 w-20 rounded-full mx-auto">
+                <h2 class="mt-4 mb-2 font-semibold"><?php echo htmlspecialchars($user['username'] ?? 'Unknown User'); ?></h2>
+                <p>
+                    <?php echo htmlspecialchars($user['dept'] ?? 'No Department'); ?>, 
+                    <?php echo htmlspecialchars($user['rank'] ?? 'No Rank'); ?><br>
+                    Badge #<?php echo htmlspecialchars($user['badge_number'] ?? 'No Badge'); ?>
+                </p>
             </div>
+
             <nav>
                 <a href="dashboard.php" class="block py-2.5 px-4 rounded hover:bg-blue-600"><i class="fas fa-home mr-2"></i>Dashboard</a>
-                <a href="incidents.php" class="block py-2.5 px-4 rounded hover:bg-blue-600"><i class="fas fa-exclamation-triangle mr-2"></i>Incidents</a>
+                <a href="incidents.php" class="block py-2.5 px-4 rounded hover:bg-blue-600"><i class="fas fa-exclamation-triangle mr-2"></i>Active Calls</a>
                 <a href="reports.php" class="block py-2.5 px-4 rounded hover:bg-blue-600"><i class="fas fa-file-alt mr-2"></i>Reports</a>
-                <a href="map.php" class="block py-2.5 px-4 rounded hover:bg-blue-600"><i the="fas fa-map-marked-alt mr-2"></i>Map</a>
+                <a href="map.php" class="block py-2.5 px-4 rounded hover:bg-blue-600"><i class="fas fa-map-marked-alt mr-2"></i>Map</a>
                 <div class="relative dropdown">
                     <a href="#" class="block py-2.5 px-4 rounded hover:bg-blue-600 cursor-pointer"><i class="fas fa-search mr-2"></i>Searches <i class="fa fa-caret-down"></i></a>
                     <div class="dropdown-menu">
@@ -294,19 +280,19 @@
                     <h2 class="text-xl font-semibold">Search Results</h2>
                     <?php foreach ($results as $row): ?>
                         <div class="bg-gray-700 p-4 rounded-lg flex items-center">
-                            <div class="idcard-image" onclick="showModal('<?php echo htmlspecialchars($row['firstname']); ?>', '<?php echo htmlspecialchars($row['lastname']); ?>', '<?php echo htmlspecialchars($row['dob']); ?>', '<?php echo htmlspecialchars($row['gender']); ?>', '<?php echo htmlspecialchars($row['driverslicense']); ?>', '<?php echo htmlspecialchars($row['mugshot']); ?>')">
+                            <div class="idcard-image" onclick="showModal('<?php echo htmlspecialchars($row['name']); ?>','<?php echo htmlspecialchars($row['dob']); ?>', '<?php echo htmlspecialchars($row['gender']); ?>', '<?php echo htmlspecialchars($row['driverslicense']); ?>', '<?php echo htmlspecialchars($row['mugshot']); ?>')">
                                 <img src="https://raw.githubusercontent.com/jonassvensson4/jsfour-idcard/master/html/assets/images/idcard.png" alt="ID Card" style="width: 100px;">
                             </div>
                             <div class="ml-4">
-                                <p><strong>Name:</strong> <?php echo htmlspecialchars($row['firstname'] . ' ' . $row['lastname']); ?></p>
+                                <p><strong>Name:</strong> <?php echo htmlspecialchars($row['name'] ); ?></p>
                                 <p><strong>Date of Birth:</strong> <?php echo htmlspecialchars($row['dob']); ?></p>
                                 <p><strong>Gender:</strong> <?php echo htmlspecialchars($row['gender']); ?></p>
                                 <p><strong>DL Status:</strong> <?php echo htmlspecialchars($row['driverslicense']); ?></p>
                             </div>
                             <div>
                                 <a href="tickets.php" class="px-4 py-2 bg-blue-500 rounded hover:bg-blue-600">Tickets</a>
-                                <a href="add/add_ticket.php?char_id=<?php echo $row['charid']; ?>" class="px-4 py-2 bg-blue-500 rounded hover:bg-blue-600">Add Ticket</a>
-                                <a href="add/add_arrest.php?char_id=<?php echo $row['charid']; ?>" class="px-4 py-2 bg-red-500 rounded hover:bg-red-600">Add Arrest</a>
+                                <a href="add/add_ticket.php?citizenid=<?php echo $row['charid']; ?>" class="px-4 py-2 bg-blue-500 rounded hover:bg-blue-600">Add Ticket</a>
+                                <a href="add/add_arrest.php?citizenid=<?php echo $row['charid']; ?>" class="px-4 py-2 bg-red-500 rounded hover:bg-red-600">Add Arrest</a>
                                 <a href="arrests.php" class="px-4 py-2 bg-red-500 rounded hover:bg-red-600">Arrests</a>
                             </div>
                         </div>
@@ -324,17 +310,16 @@
         }
 
         function showModal(firstName, lastName, dob, gender, driverslicense, mugshot) {
-            document.getElementById("driverslicense").textContent = 'DL Status: ' + driverslicense;
-            var fullName = firstName + " " + lastName; // Combine names to create full name
-            document.getElementById("fullName").textContent = fullName;
-            document.getElementById("firstName").textContent = firstName;
-            document.getElementById("lastName").textContent = lastName;
-            document.getElementById("dob").textContent = dob;
-            document.getElementById("gender").textContent = gender;
-            document.getElementById("mugshotImage").src = 'data:image/png;base64,' + mugshot.replace(/^data:image\/(png|jpg);base64,/, '');
-
-            document.getElementById("idModal").style.display = "block";
-        }
+    document.getElementById("driverslicense").textContent = 'DL Status: ' + (driverslicense !== 'N/A' ? driverslicense : 'Not Available');
+    var fullName = (firstName || 'Unknown') + " " + (lastName || 'Unknown');
+    document.getElementById("fullName").textContent = fullName;
+    document.getElementById("firstName").textContent = firstName || 'Unknown';
+    document.getElementById("lastName").textContent = lastName || 'Unknown';
+    document.getElementById("dob").textContent = dob || 'Unknown';
+    document.getElementById("gender").textContent = gender || 'Unknown';
+    document.getElementById("mugshotImage").src = mugshot || 'path/to/default/mugshot.png';
+    document.getElementById("idModal").style.display = "block";
+}
 
         document.addEventListener('DOMContentLoaded', function () {
             const closeBtn = document.querySelector('.close');

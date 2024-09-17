@@ -1,6 +1,6 @@
 <?php
 session_start();
-require_once '..config/db.php'; // Ensure this file contains your PDO connection logic
+require_once '../db.php';
 
 if (!isset($_GET['ticket_id']) || !is_numeric($_GET['ticket_id'])) {
     echo "Invalid ticket ID.";

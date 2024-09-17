@@ -2,12 +2,13 @@
 session_start();
 require_once 'config/db.php';
 
+// Redirect to login if user is not authenticated
 if (!isset($_SESSION['user_id'])) {
     header("Location: login.php");
     exit;
 }
 
-// Fetch detailed user information including dept, rank, and badge number
+// Fetch detailed user information
 $stmt = $conn->prepare("SELECT username, avatar_url, dept, rank, badge_number, super FROM users WHERE id = ?");
 $stmt->execute([$_SESSION['user_id']]);
 $user = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -19,32 +20,31 @@ if (!$user) {
 
 require_once 'config/dept_style_config.php';
 
-if (!$user) {
-    echo "User not found.";
-    exit;
-}
+// Initialize $reports to avoid warnings
+$reports = [];
 
-// Handling the form submission
+// Handling form submission for new reports
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['submit'])) {
-    $subject = $_POST['subject'] ?? '';
     $content = $_POST['content'] ?? '';
     $perpetrator = $_POST['perpetrator'] ?? '';
-    $author_id = $_SESSION['user_id'];
+    $author_id = $_SESSION['user_id']; // Use the session user ID as the author
     $report_date = date("Y-m-d H:i:s");
     $status = 'Open';
 
-    $stmt = $conn->prepare("INSERT INTO reports (char_id, author, perpetrator, report_date, report_content, status) VALUES (?, ?, ?, ?, ?, ?)");
-    if ($stmt->execute([$author_id, $subject, $perpetrator, $report_date, $content, $status])) {
+    $stmt = $conn->prepare("INSERT INTO reports (author, perpetrator, report_date, report_content, status) VALUES (?, ?, ?, ?, ?)");
+    if ($stmt->execute([$author_id, $perpetrator, $report_date, $content, $status])) {
         echo "<p>Report successfully submitted.</p>";
     } else {
         echo "<p>Error submitting report.</p>";
     }
 } elseif ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['search'])) {
+    // Handle search functionality
     $search_term = $_POST['search_term'] ?? '';
     $reports_stmt = $conn->prepare("SELECT * FROM reports WHERE author LIKE ? OR perpetrator LIKE ? OR report_content LIKE ?");
     $reports_stmt->execute(["%$search_term%", "%$search_term%", "%$search_term%"]);
     $reports = $reports_stmt->fetchAll(PDO::FETCH_ASSOC);
 } else {
+    // Fetch all reports for display
     $reports_stmt = $conn->prepare("SELECT * FROM reports ORDER BY report_date DESC");
     $reports_stmt->execute();
     $reports = $reports_stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -61,7 +61,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['submit'])) {
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css">
     <style>
         body {
-            background-image: url('<?php echo $backgroundImage; ?>');
+            background-image: url('<?php echo isset($backgroundImage) ? htmlspecialchars($backgroundImage) : ''; ?>');
             background-size: cover;
             background-position: center;
             background-repeat: no-repeat;
@@ -73,7 +73,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['submit'])) {
             left: 0;
             z-index: 1000;
             width: 100%;
-            background: #4b5563; /* Matching Tailwind's gray-700 */
+            background: #4b5563;
             border-radius: 0 0 0.5rem 0.5rem;
         }
         .sidebar {
@@ -92,10 +92,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['submit'])) {
         }
         .content {
             transition: margin-left 0.9s ease-out;
-            margin-right: 120px; /* match sidebar width when visible */
+            margin-right: 120px;
         }
         .full-width {
-            margin-left: 0; /* full width when sidebar is hidden */
+            margin-left: 0;
         }
     </style>
 </head>
@@ -105,7 +105,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['submit'])) {
         <button onclick="toggleSidebar()" class="sidebar-button text-white text-xl bg-gray-800 px-4 py-2 rounded">&#9776; Toggle</button>
         
         <!-- Sidebar -->
-        <div class="bg-gray-800 w-64 space-y-6 py-7 px-2 fixed inset-y-0 left-0 overflow-y-auto">
+        <div id="sidebar" class="bg-gray-800 w-64 space-y-6 py-7 px-2 fixed inset-y-0 left-0 overflow-y-auto">
             <div class="text-center">
                 <img src="<?php echo htmlspecialchars($user['avatar_url']); ?>" alt="User Avatar" class="h-20 w-20 rounded-full mx-auto">
                 <h2 class="mt-4 mb-2 font-semibold"><?php echo htmlspecialchars($user['username']); ?></h2>
@@ -141,63 +141,62 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['submit'])) {
                 </form>
             </nav>
         </div>
-        <div>
+
         <!-- Content -->
         <div id="mainContent" class="flex-1 flex flex-col ml-64 p-10 content">
             <header class="mb-5">
-            <h1 class="font-bold text-3xl mb-4">Reports</h1>
-            <div class="bg-gray-800 p-6 rounded-lg shadow-lg">
-                <h2 class="text-xl font-semibold mb-4">Create New Report</h2>
-                <form method="post" class="space-y-4">
-                    <div>
-                        <label for="subject" class="block mb-1">Reporter (Author):</label>
-                        <input type="text" id="subject" name="subject" required class="w-full h-10 px-3 rounded bg-gray-700 focus:bg-gray-600 outline-none">
-                    </div>
-                    <div>
-                        <label for="perpetrator" class="block mb-1">Perpetrator:</label>
-                        <input type="text" id="perpetrator" name="perpetrator" required class="w-full h-10 px-3 rounded bg-gray-700 focus:bg-gray-600 outline-none">
-                    </div>
-                    <div>
-                        <label for="content" class="block mb-1">Content:</label>
-                        <textarea id="content" name="content" rows="4" required class="w-full px-3 py-2 rounded bg-gray-700 focus:bg-gray-600 outline-none"></textarea>
-                    </div>
-                    <button type="submit" name="submit" class="px-4 py-2 bg-blue-500 rounded hover:bg-blue-600 focus:outline-none">Submit Report</button>
-                </form>
-            </div>
-            <!-- Search Form -->
-            <div class="mt-6">
-                <h2 class="text-xl font-semibold">Search Reports</h2>
-                <form method="post" class="mb-4">
-                    <input type="text" name="search_term" placeholder="Search by author, perpetrator, or content" class="px-3 py-2 rounded bg-gray-700 focus:bg-gray-600">
-                    <button type="submit" name="search" class="px-4 py-2 bg-blue-500 rounded hover:bg-blue-600">Search</button>
-                </form>
-            </div>
-            <!-- Reports Table -->
-            <div class="bg-gray-800 p-6 rounded-lg shadow-lg">
-                <h2 class="text-xl font-semibold mb-4">Existing Reports</h2>
-                <table class="w-full text-sm text-left text-gray-500">
-                    <thead class="text-xs text-gray-700 uppercase bg-gray-700">
-                        <tr>
-                            <th scope="col" class="px-6 py-3">Reporter</th>
-                            <th scope="col" class="px-6 py-3">Perpetrator</th>
-                            <th scope="col" class="px-6 py-3">Date</th>
-                            <th scope="col" class="px-6 py-3">Content</th>
-                            <th scope="col" class="px-6 py-3">Status</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php foreach ($reports as $report) : ?>
-                        <tr class="bg-gray-700 border-b border-gray-700">
-                            <td class="px-6 py-4"><?= htmlspecialchars($report['author']) ?></td>
-                            <td class="px-6 py-4"><?= htmlspecialchars($report['perpetrator']) ?></td>
-                            <td class="px-6 py-4"><?= htmlspecialchars($report['report_date']) ?></td>
-                            <td class="px-6 py-4"><?= nl2br(htmlspecialchars($report['report_content'])) ?></td>
-                            <td class="px-6 py-4"><?= htmlspecialchars($report['status']) ?></td>
-                        </tr>
-                        <?php endforeach; ?>
-                    </tbody>
-                </table>
-            </div>
+                <h1 class="font-bold text-3xl mb-4">Reports</h1>
+                <div class="bg-gray-800 p-6 rounded-lg shadow-lg">
+                    <h2 class="text-xl font-semibold mb-4">Create New Report</h2>
+                    <form method="post" class="space-y-4">
+                        <div>
+                            <label for="perpetrator" class="block mb-1">Perpetrator:</label>
+                            <input type="text" id="perpetrator" name="perpetrator" required class="w-full h-10 px-3 rounded bg-gray-700 focus:bg-gray-600 outline-none">
+                        </div>
+                        <div>
+                            <label for="content" class="block mb-1">Content:</label>
+                            <textarea id="content" name="content" rows="4" required class="w-full px-3 py-2 rounded bg-gray-700 focus:bg-gray-600 outline-none"></textarea>
+                        </div>
+                        <button type="submit" name="submit" class="px-4 py-2 bg-blue-500 rounded hover:bg-blue-600 focus:outline-none">Submit Report</button>
+                    </form>
+                </div>
+
+                <!-- Search Form -->
+                <div class="mt-6">
+                    <h2 class="text-xl font-semibold">Search Reports</h2>
+                    <form method="post" class="mb-4">
+                        <input type="text" name="search_term" placeholder="Search by author, perpetrator, or content" class="px-3 py-2 rounded bg-gray-700 focus:bg-gray-600">
+                        <button type="submit" name="search" class="px-4 py-2 bg-blue-500 rounded hover:bg-blue-600">Search</button>
+                    </form>
+                </div>
+
+                <!-- Reports Table -->
+                <div class="bg-gray-800 p-6 rounded-lg shadow-lg">
+                    <h2 class="text-xl font-semibold mb-4">Existing Reports</h2>
+                    <table class="w-full text-sm text-left text-gray-500">
+                        <thead class="text-xs text-gray-700 uppercase bg-gray-700">
+                            <tr>
+                                <th scope="col" class="px-6 py-3">Reporter</th>
+                                <th scope="col" class="px-6 py-3">Perpetrator</th>
+                                <th scope="col" class="px-6 py-3">Date</th>
+                                <th scope="col" class="px-6 py-3">Content</th>
+                                <th scope="col" class="px-6 py-3">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach ($reports as $report) : ?>
+                            <tr class="bg-gray-700 border-b border-gray-700">
+                                <td class="px-6 py-4"><?= htmlspecialchars($report['author']) ?></td>
+                                <td class="px-6 py-4"><?= htmlspecialchars($report['perpetrator']) ?></td>
+                                <td class="px-6 py-4"><?= htmlspecialchars($report['report_date']) ?></td>
+                                <td class="px-6 py-4"><?= nl2br(htmlspecialchars($report['report_content'])) ?></td>
+                                <td class="px-6 py-4"><?= htmlspecialchars($report['status']) ?></td>
+                            </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                </div>
+            </header>
         </div>
     </div>
     <script>
@@ -207,6 +206,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['submit'])) {
             sidebar.classList.toggle("hidden-sidebar");
             mainContent.classList.toggle("full-width");
         }
+
         // JavaScript to handle dropdown behavior
         document.addEventListener('DOMContentLoaded', function () {
             const dropdown = document.querySelector('.dropdown');

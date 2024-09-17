@@ -217,28 +217,26 @@
     ];
 
 
-    // Assume database connection is already established in $conn
-    if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['search_query'])) {
-        $search_query = trim($_POST['search_query']);
+// Assume database connection is already established in $conn
+if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['search_query'])) {
+    $search_query = trim($_POST['search_query']);
 
-        // Update SQL statement to fetch vehicle, owner details, and related tickets
-        $search_stmt = $conn->prepare("
-            SELECT v.id, v.plate, JSON_UNQUOTE(JSON_EXTRACT(v.properties, '$.model')) AS model_hash, 
-                c.charid, c.firstname, c.lastname, c.dob, c.driverslicense,
-                t.ticket_id, t.issued_by, t.issue_date, t.violation, t.fine_amount
-            FROM nd_vehicles v
-            JOIN nd_characters c ON v.owner = c.charid
-            LEFT JOIN tickets t ON c.charid = t.char_id
-            WHERE v.plate LIKE :query
-        ");
-        $search_stmt->execute([':query' => "%$search_query%"]);
-        $results = $search_stmt->fetchAll(PDO::FETCH_ASSOC);
+    // Update SQL statement to fetch vehicle details based on the new table structure
+    $search_stmt = $conn->prepare("
+        SELECT pv.id, pv.plate, pv.vehicle AS model, pv.hash AS model_hash, 
+            pv.citizenid, pv.garage, pv.fuel, pv.engine, pv.body, pv.state
+        FROM player_vehicles pv
+        WHERE pv.plate LIKE :query
+    ");
+    $search_stmt->execute([':query' => "%$search_query%"]);
+    $results = $search_stmt->fetchAll(PDO::FETCH_ASSOC);
 
-        // Convert model hashes to names using a predefined hash-to-name mapping array
-        foreach ($results as $key => $row) {
-            $results[$key]['model_name'] = isset($vehicleHashes[$row['model_hash']]) ? $vehicleHashes[$row['model_hash']] : 'Unknown Model';
-        }
+    // Optionally convert model hashes to names using a predefined hash-to-name mapping array
+    foreach ($results as $key => $row) {
+        $results[$key]['model_name'] = isset($vehicleHashes[$row['model_hash']]) ? $vehicleHashes[$row['model_hash']] : 'Unknown Model';
     }
+}
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
