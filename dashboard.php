@@ -7,7 +7,7 @@
         exit();
     }
 
-    $stmt = $conn->prepare("SELECT username, avatar_url, dept, rank, badge_number, super FROM users WHERE id = ?");
+    $stmt = $conn->prepare("SELECT * FROM users WHERE id = ?");
     $stmt->execute([$_SESSION['user_id']]);
     $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -23,11 +23,12 @@
 
     require_once 'config/dept_style_config.php';
 
-    $versionUrl = 'https://github.com/StoicCAD/nat/blob/main/version.txt';
+    $versionUrl = 'https://github.com/StoicCAD/CAD/blob/nat/version.txt';
     $currentVersion = '1.0.0';
 
     function getLatestVersion($url) {
         $version = @file_get_contents($url);
+        return $version;
         if ($version === FALSE) {
             return false; // Error fetching version
         }
@@ -35,6 +36,7 @@
     }
 
     $latestVersion = getLatestVersion($versionUrl);
+
     if ($latestVersion === false) {
         $versionMessage = 'Error fetching version information.';
     } else {
@@ -62,6 +64,8 @@
     if (isset($_POST['update_report_status'])) {
         $stmt = $conn->prepare("UPDATE reports SET status = ? WHERE report_id = ?");
         $stmt->execute([$_POST['status'], $_POST['report_id']]);
+        header("Location: dashboard.php");
+        exit();
     }
 
     $incidents_stmt = $conn->prepare("SELECT * FROM incidents ORDER BY created_at DESC");
@@ -86,7 +90,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard - MDT</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.0.3/dist/tailwind.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css">
     <style>
         body {
@@ -229,13 +233,13 @@ body::-webkit-scrollbar-track {
 
         <!-- Main Content -->
         <div id="mainContent" class="flex-1 flex flex-col ml-64 p-10 content">
-            <header class="mb-5">
+            <header class="mb-5 flex flex-col gap-2">
                 <h1 class="font-bold text-3xl mb-2">Dashboard</h1>
 
                 <!-- Display version update message -->
                 <?php if ($isAdmin): ?>
                     <div class="bg-gray-900 p-4 rounded-lg shadow-md">
-                        <div class="<?= $latestVersion === false ? 'bg-red-500' : ($isUpdateAvailable ? 'bg-yellow-500' : 'bg-green-500'); ?> p-4 rounded-lg mb-4 text-center">
+                        <div class="<?= $latestVersion === false ? 'bg-red-500' : ($isUpdateAvailable ? 'bg-yellow-500' : 'bg-green-500'); ?> p-4 rounded-lg text-center">
                             <p class="text-black font-semibold"><?= $versionMessage; ?></p>
                         </div>
                     </div>
@@ -262,7 +266,7 @@ body::-webkit-scrollbar-track {
                     <?php endforeach; ?>
                 </div>
 
-                <div class="bg-gray-900 mt-5 p-5 rounded-lg shadow-lg">
+                <div class="bg-gray-900 p-5 rounded-lg shadow-lg">
                     <h2 class="text-xl mb-2">Reports</h2>
                     <?php foreach ($reports as $report): ?>
                         <div class="bg-gray-800 p-4 rounded mb-2">

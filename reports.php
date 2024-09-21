@@ -8,7 +8,7 @@ if (!isset($_SESSION['user_id'])) {
 }
 
 // Fetch detailed user information including dept, rank, and badge number
-$stmt = $conn->prepare("SELECT username, avatar_url, dept, rank, badge_number, super FROM users WHERE id = ?");
+$stmt = $conn->prepare("SELECT * FROM users WHERE id = ?");
 $stmt->execute([$_SESSION['user_id']]);
 $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -57,7 +57,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['submit'])) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Reports</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.0.3/dist/tailwind.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css">
     <style>
         body {
@@ -109,7 +109,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['submit'])) {
             <div class="text-center">
                 <img src="<?php echo htmlspecialchars($user['avatar_url']); ?>" alt="User Avatar" class="h-20 w-20 rounded-full mx-auto">
                 <h2 class="mt-4 mb-2 font-semibold"><?php echo htmlspecialchars($user['username']); ?></h2>
-                <p><?php echo htmlspecialchars($user['dept']); ?>, <?php echo htmlspecialchars($user['rank']); ?><br>Badge #<?php echo htmlspecialchars($user['badge_number']); ?></p>
+                <p>
+                    <?php echo htmlspecialchars($user['dept'] ?? 'No Department'); ?>, 
+                    <?php echo htmlspecialchars($user['rank'] ?? 'No Rank'); ?><br>
+                    Badge #<?php echo htmlspecialchars($user['badge_number'] ?? 'No Badge'); ?>
+                </p>
             </div>
             <nav>
                 <a href="dashboard.php" class="block py-2.5 px-4 rounded hover:bg-blue-600"><i class="fas fa-home mr-2"></i>Dashboard</a>
@@ -167,9 +171,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['submit'])) {
             <!-- Search Form -->
             <div class="mt-6">
                 <h2 class="text-xl font-semibold">Search Reports</h2>
-                <form method="post" class="mb-4">
-                    <input type="text" name="search_term" placeholder="Search by author, perpetrator, or content" class="px-3 py-2 rounded bg-gray-700 focus:bg-gray-600">
-                    <button type="submit" name="search" class="px-4 py-2 bg-blue-500 rounded hover:bg-blue-600">Search</button>
+                <form method="post" class="mb-4 flex flex-row">
+                    <input type="text" name="search_term" placeholder="Search by author, perpetrator, or content" class="px-3 py-2 rounded bg-gray-700 focus:bg-gray-600 w-full rounded-r-none">
+                    <button type="submit" name="search" class="px-4 py-2 bg-blue-500 rounded w-max hover:bg-blue-600 rounded-l-none">Search</button>
                 </form>
             </div>
             <!-- Reports Table -->

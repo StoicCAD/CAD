@@ -9,7 +9,7 @@
     }
 
     // Fetch detailed user information including dept, rank, and badge number
-    $stmt = $conn->prepare("SELECT username, avatar_url, dept, rank, badge_number, super FROM users WHERE id = ?");
+    $stmt = $conn->prepare("SELECT * FROM users WHERE id = ?");
     $stmt->execute([$_SESSION['user_id']]);
     $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -34,7 +34,7 @@
     }
 
     // Fetch all users in the same department as the logged-in super user
-    $deptUsersStmt = $conn->prepare("SELECT id, username, email, avatar_url, dept, rank, badge_number, super FROM users WHERE dept = ?");
+    $deptUsersStmt = $conn->prepare("SELECT * FROM users WHERE dept = ?");
     $deptUsersStmt->execute([$user['dept']]);
     $deptUsers = $deptUsersStmt->fetchAll(PDO::FETCH_ASSOC);
 
@@ -46,7 +46,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Super Dashboard - MDT</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.0.3/dist/tailwind.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css">
     <style>
         body {

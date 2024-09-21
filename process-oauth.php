@@ -34,7 +34,6 @@ function apiRequest($url, $postFields = NULL, $accessToken = NULL) {
     curl_close($ch);
     return json_decode($response);
 }
-
 // CSRF protection
 if (!isset($_GET['state']) || $_SESSION['oauth2state'] !== $_GET['state']) {
     header('Location: error.php?message=Invalid_state');
@@ -51,7 +50,7 @@ try {
         'redirect_uri' => $redirectUri,
         'code' => $_GET['code']
     ]);
-
+  
     if (!isset($tokenResponse->access_token)) {
         throw new Exception('Access token not received.');
     }
@@ -61,17 +60,31 @@ try {
     $user = apiRequest($apiURLBase, NULL, $accessToken);
 
     // Check and register or log in user
-    $stmt = $conn->prepare("SELECT id FROM users WHERE discord_id = ?");
+    $stmt = $conn->prepare("select * from users where discord_id = ?");
     $stmt->execute([$user->id]);
-    $existingUser = $stmt->fetch();
+    $existinguser = $stmt->fetch();
+    $stmt = $conn->prepare("select count(*) as count from users");
+    $stmt->execute();
+    $userCount = $stmt->fetch();
 
     if ($existingUser) {
-        $_SESSION['user_id'] = $existingUser['id'];
+      $_SESSION['user_id'] = $existingUser['id'];
     } else {
-        $avatarUrl = isset($user->avatar) ? "https://cdn.discordapp.com/avatars/{$user->id}/{$user->avatar}.png" : null;
-        $stmt = $conn->prepare("INSERT INTO users (discord_id, username, email, avatar_url) VALUES (?, ?, ?, ?)");
-        $stmt->execute([$user->id, $user->username, $user->email, $avatarUrl]);
-        $_SESSION['user_id'] = $conn->lastInsertId();
+      $avatarUrl = isset($user->avatar) ? "https://cdn.discordapp.com/avatars/{$user->id}/{$user->avatar}.png" : null;
+      $stmt;
+      
+      if($userCount['count'] < 1) { 
+          // For the first user (admin), include the 'rank' field
+          $stmt = $conn->prepare("INSERT INTO users (discord_id, username, email, avatar_url, password, `rank`, super) VALUES (?, ?, ?, ?, ?, ?, ?)");
+          $stmt->execute([$user->id, $user->username, $user->email, $avatarUrl, '', "Admin", 1]);
+      } else {
+          // For other users, include the 'rank' field as well
+          $stmt = $conn->prepare("INSERT INTO users (discord_id, username, email, avatar_url, password, `rank`) VALUES (?, ?, ?, ?, ?, ?)");
+          $stmt->execute([$user->id, $user->username, $user->email, $avatarUrl, '', "User"]);
+      }
+
+
+      $_SESSION['user_id'] = $conn->lastInsertId();
     }
 
     header('Location: dashboard.php');

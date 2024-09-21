@@ -8,7 +8,7 @@
     }
 
     // Fetch detailed user information including dept, rank, and badge number
-    $stmt = $conn->prepare("SELECT username, avatar_url, dept, rank, badge_number, super FROM users WHERE id = ?");
+    $stmt = $conn->prepare("SELECT * FROM users WHERE id = ?");
     $stmt->execute([$_SESSION['user_id']]);
     $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -24,7 +24,8 @@
     if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $title = $_POST['title'];
         $description = $_POST['description'];
-        $reported_by = $_SESSION['user_id'];
+        $reported_by = $user['id'];
+        echo $reported_by;
         $stmt = $conn->prepare("INSERT INTO incidents (title, description, reported_by) VALUES (?, ?, ?)");
         $stmt->execute([$title, $description, $reported_by]);
     }
@@ -39,7 +40,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Incidents</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.0.3/dist/tailwind.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css">
     <style>
         body {
@@ -91,8 +92,11 @@
             <div class="text-center">
                 <img src="<?php echo htmlspecialchars($user['avatar_url']); ?>" alt="User Avatar" class="h-20 w-20 rounded-full mx-auto">
                 <h2 class="mt-4 mb-2 font-semibold"><?php echo htmlspecialchars($user['username']); ?></h2>
-                <p><?php echo htmlspecialchars($user['dept']); ?>, <?php echo htmlspecialchars($user['rank']); ?><br>Badge #<?php echo htmlspecialchars($user['badge_number']); ?></p>
-            </div>
+                <p>
+                    <?php echo htmlspecialchars($user['dept'] ?? 'No Department'); ?>, 
+                    <?php echo htmlspecialchars($user['rank'] ?? 'No Rank'); ?><br>
+                    Badge #<?php echo htmlspecialchars($user['badge_number'] ?? 'No Badge'); ?>
+                </p>            </div>
             <nav>
                 <a href="dashboard.php" class="block py-2.5 px-4 rounded hover:bg-blue-600"><i class="fas fa-home mr-2"></i>Dashboard</a>
                 <a href="incidents.php" class="block py-2.5 px-4 rounded hover:bg-blue-600"><i class="fas fa-exclamation-triangle mr-2"></i>Incidents</a>
@@ -123,12 +127,11 @@
                 </form>
             </nav>
         </div>
-        <div>
         <!-- Content -->
         <div id="mainContent" class="flex-1 flex flex-col ml-64 p-10 content">
             <header class="mb-5">
             <h1 class="font-bold text-3xl mb-6">Incidents</h1>
-            <div class="bg-gray-900 p-6 rounded-lg shadow-md">
+            <div class="bg-gray-900 p-6 rounded-lg shadow-md" style="max-width: 40dvw">
                 <h2 class="text-xl font-semibold mb-4">Report New Incident</h2>
                 <form method="post" class="space-y-4">
                     <div>
@@ -142,18 +145,21 @@
                     <button type="submit" class="w-full py-2 bg-blue-500 rounded hover:bg-blue-600 focus:outline-none">Report Incident</button>
                 </form>
             </div>
-            <div class="bg-gray-900 mt-6 p-6 rounded-lg shadow-md">
+            <div class="bg-gray-900 mt-6 p-6 rounded-lg shadow-md" style="max-width: 40dvw">
                 <h2 class="text-xl font-semibold mb-4">Existing Incidents</h2>
                 <ul>
                     <?php foreach ($incidents as $incident) {
                         echo "<li class='py-2 border-b border-gray-700'>" . htmlspecialchars($incident['title']) . " - " . htmlspecialchars($incident['description']) . "</li>";
                     } ?>
                 </ul>
+                <?php if(count($incidents) < 1) { echo "<p class='text-gray-300 text-center'>No existing incidents...</p>"; } ?>
             </div>
         </div>
     </div>
-    </div>
     <script>
+        if ( window.history.replaceState ) {
+          window.history.replaceState( null, null, window.location.href );
+        }
         function toggleSidebar() {
             var sidebar = document.getElementById("sidebar");
             var mainContent = document.getElementById("mainContent");

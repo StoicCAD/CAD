@@ -3,31 +3,34 @@
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
+$isSessionActive = (session_status() == PHP_SESSION_ACTIVE);
 // Start session
-session_start();
+if(!$isSessionActive) {
+  session_start();
+}
 
 // Database credentials
 // Define the host and port of your MySQL database. This is typically 'localhost' or an IP address followed by the port number if applicable (e.g., '127.0.0.1:3308').
 define('DB_HOST', '127.0.0.1');
 
 // Define the username used to connect to your MySQL database. Update this with the username for your database.
-define('DB_USERNAME', '');
+define('DB_USERNAME', 'root');
 
 // Define the password for the MySQL database user. Update this with the password associated with your database username.
-define('DB_PASSWORD', '');
+define('DB_PASSWORD', 'Waleed7867$');
 
 // Define the name of the database you are connecting to. Update this with the name of your database.
-define('DB_NAME', '');
+define('DB_NAME', 'stoiccad');
 
 // OAuth client credentials
 // To get your OAuth client credentials, you typically need to register your application with the OAuth service provider (e.g., Google, Discord).
 // The client ID and client secret are provided during this registration process.
 // Replace the placeholders below with the credentials obtained from the OAuth service.
-define('CLIENT_ID', ''); // The client ID provided by the OAuth service.
-define('CLIENT_SECRET', ''); // The client secret provided by the OAuth service.
+define('CLIENT_ID', '1265117046702739608'); // The client ID provided by the OAuth service.
+define('CLIENT_SECRET', 'FWH1oMhfV9XcE223Ivy9hCuACB_-V14d'); // The client secret provided by the OAuth service.
 
 // Define the URL to which the OAuth service will redirect after successful authentication. Update this to match your actual redirect URI.
-define('REDIRECTURI', 'https://your-domain/process-oauth.php');
+define('REDIRECTURI', 'http://localhost/GITHUB/cad/process-oauth.php');
 
 // Discord Token
 // To generate a token, follow these steps:
@@ -35,7 +38,7 @@ define('REDIRECTURI', 'https://your-domain/process-oauth.php');
 // 2. After logging in, you'll be redirected to https://stoiccad.com/dashboard.php.
 // 3. Click on 'Generate Random Token' to get your token.
 // 4. Replace the empty string below with the token you obtain.
-define('TOKEN', '');
+define('TOKEN', 'b4db46632b832663d9e041ac7598aa31');
 
 
 //Access the map at http://<server IP>:<server port>/webmap/

@@ -1,6 +1,6 @@
 <?php
 // Include the configuration file to access database credentials
-require_once '../config.php';
+require_once 'config.php';
 
 try {
     // Establish PDO database connection using configuration from config.php

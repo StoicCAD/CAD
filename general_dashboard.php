@@ -8,7 +8,7 @@ if (!isset($_SESSION['user_id'])) {
 }
 
 // Fetch user information
-$stmt = $conn->prepare("SELECT username, avatar_url, dept, rank, badge_number FROM users WHERE id = ?");
+$stmt = $conn->prepare("SELECT * FROM users WHERE id = ?");
 $stmt->execute([$_SESSION['user_id']]);
 $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -80,7 +80,19 @@ if (isset($_POST['submitApplication'])) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CIV Dashboard</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.0.3/dist/tailwind.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css">
+    <style>
+      .dropdown-menu {
+          display: none;
+          position: absolute;
+          left: 0;
+          z-index: 1000;
+          width: 100%;
+          background: #4b5563; /* Matching Tailwind's gray-700 */
+          border-radius: 0 0 0.5rem 0.5rem;
+      }
+    </style>
 </head>
 <body class="bg-gray-900 text-white">
     <div class="min-h-screen flex">
@@ -93,6 +105,29 @@ if (isset($_POST['submitApplication'])) {
             </div>
             <nav class="mt-10">
                 <a href="general_dashboard.php" class="block py-2.5 px-4 rounded bg-blue-600 hover:bg-blue-700"><i class="fas fa-home mr-2"></i>Home</a>
+                <?php if($user['super'] === 1 && $user['rank'] === "Admin") { ?>
+                    <a href="dashboard.php" class="block py-2.5 px-4 rounded hover:bg-blue-600"><i class="fas fa-home mr-2"></i>Dashboard</a>
+                    <a href="incidents.php" class="block py-2.5 px-4 rounded hover:bg-blue-600"><i class="fas fa-exclamation-triangle mr-2"></i>Active Calls</a>
+                    <a href="reports.php" class="block py-2.5 px-4 rounded hover:bg-blue-600"><i class="fas fa-file-alt mr-2"></i>Reports</a>
+                    <a href="map.php" class="block py-2.5 px-4 rounded hover:bg-blue-600"><i class="fas fa-map-marked-alt mr-2"></i>Map</a>
+                    <!-- Dropdown for Searches -->
+                    <div class="relative dropdown">
+                        <a href="#" class="block py-2.5 px-4 rounded hover:bg-blue-600 cursor-pointer"><i class="fas fa-search mr-2"></i>Searches <i class="fa fa-caret-down"></i></a>
+                        <div class="dropdown-menu">
+                            <a href="people_search.php" class="block py-2 px-4 text-sm text-white hover:bg-gray-600">People</a>
+                            <a href="vehicle_search.php" class="block py-2 px-4 text-sm text-white rounded-[0_0_0.5rem_0.5rem] hover:bg-gray-600">Vehicles</a>
+                        </div>
+                    </div>
+
+                    <a href="settings.php" class="block py-2.5 px-4 rounded hover:bg-blue-600"><i class="fas fa-cog mr-2"></i>Settings</a>
+                    <?php if ($user['rank'] == 'Admin'): ?>
+                        <a href="a-dash.php" class="block py-2.5 px-4 rounded hover:bg-blue-600"><i class="fas fa-user-shield mr-2"></i>Admin Dashboard</a>
+                    <?php endif; ?>
+
+                    <?php if ($user['super'] == 1): ?>
+                        <a href="super-dashboard.php" class="block py-2.5 px-4 rounded hover:bg-blue-600"><i class="fas fa-user-shield mr-2"></i>Supervisor Dashboard</a>
+                    <?php endif; ?>
+                <?php } ?>
             </nav>
                 <form method="post" action="logout.php" class="mt-5">
                     <button type="submit" name="logout" class="w-full py-2 bg-red-600 text-white rounded hover:bg-red-700 focus:outline-none">
@@ -148,8 +183,24 @@ if (isset($_POST['submitApplication'])) {
                     <button type="submit" name="submitApplication" class="py-2 px-4 bg-blue-700 hover:bg-blue-800 rounded text-white font-bold">Submit Application</button>
                 </form>
             </div>
-            </div>
-            </div>
-    </div>
+        </div>
+    <script>
+      // JavaScript to handle dropdown behavior
+      document.addEventListener('DOMContentLoaded', function () {
+          const dropdown = document.querySelector('.dropdown');
+          const dropdownMenu = document.querySelector('.dropdown-menu');
+
+          dropdown.addEventListener('click', function (event) {
+              event.stopPropagation();
+              dropdownMenu.style.display = dropdownMenu.style.display === 'block' ? 'none' : 'block';
+          });
+
+          window.addEventListener('click', function () {
+              if (dropdownMenu.style.display === 'block') {
+                  dropdownMenu.style.display = 'none';
+              }
+          });
+      });
+    </script>
 </body>
 </html>
