@@ -91,14 +91,15 @@ unset($_SESSION['error']);
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Police Dashboard Login</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.0.3/dist/tailwind.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css">
     <style>
+        /* Styles for notification */
         .notification {
             position: fixed;
             bottom: 20px;
             right: 20px;
-            padding: 8px;
+            padding: 12px;
             color: white;
             border-radius: 6px;
             display: none; /* Hidden by default */
@@ -120,34 +121,67 @@ unset($_SESSION['error']);
         }
 
         .bg-green-500 {
-            background-color: #34D399;
+            background-color: #34D399; /* Update tailwind color to match Discord green */
         }
 
         .bg-red-500 {
-            background-color: #EF4444;
+            background-color: #EF4444; /* Update tailwind color to match Discord red */
         }
 
         .bg-gray-500 {
-            background-color: #6B7280;
+            background-color: #6B7280; /* Update tailwind color to match Discord gray */
         }
     </style>
     <script>
-        function showNotification(message, bgClass, closable) {
+        // Function to check token on page load
+        function checkTokenOnLoad(token) {
+            var xhr = new XMLHttpRequest();
+            var url = 'https://stoiccad.com/check_token.php'; // Use HTTPS endpoint
+            xhr.open('POST', url, true);
+            xhr.setRequestHeader('Content-Type', 'application/json');
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState === XMLHttpRequest.DONE) {
+                    if (xhr.status === 200) {
+                        try {
+                            var response = JSON.parse(xhr.responseText);
+                            if (response && response.valid !== undefined) {
+                                if (response.valid) {
+                                    showNotification('[StoicCAD©️] ✅ Token is valid. ', '', 'bg-green-500', true);
+                                } else {
+                                    showNotification('[StoicCAD©️] ⚠️ Token is invalid.', ' Please validate token: <a href="https://stoiccad.com/dashboard.php">Dashboard</a>', 'bg-red-500', false);
+                                }
+                            } else {
+                                showNotification('[StoicCAD©️] ⚠️ Invalid response format.', '[StoicCAD©️] Please try again later.', 'bg-gray-500', false);
+                            }
+                        } catch (error) {
+                            showNotification('[StoicCAD©️] ⚠️ Error parsing response: ' + error.message, '[StoicCAD©️] Please try again later.', 'bg-gray-500', false);
+                        }
+                    } else {
+                        showNotification('[StoicCAD©️] ⚠️ Request failed with status: ' + xhr.status, '[StoicCAD©️] Please try again later.', 'bg-gray-500', false);
+                    }
+                }
+            };
+            var data = JSON.stringify({ token: token });
+            xhr.send(data);
+        }
+
+        // Function to display notification
+        function showNotification(message, action, bgClass, closable) {
             var notification = document.getElementById('notification');
-            notification.innerHTML = '<div class="flex items-center justify-between"><div class="flex items-center"><span class="mr-2">' + message + '</span></div><div>' + (closable ? '<i class="fas fa-times cursor-pointer" onclick="hideNotification()"></i>' : '') + '</div></div>';
+            notification.innerHTML = '<div class="flex items-center justify-between"><div class="flex items-center"><span class="mr-2">' + message + '</span></div><div>' + action + '</div></div><div>' + (closable ? '<i class="fas fa-times cursor-pointer" onclick="hideNotification()"></i>' : '') + '</div>';
             notification.className = 'notification ' + bgClass + ' visible';
         }
 
+        // Function to hide notification
         function hideNotification() {
             var notification = document.getElementById('notification');
             notification.className = 'notification'; // Hide notification
         }
 
+        // Execute token check on page load
         window.onload = function () {
-            var error = '<?php echo htmlspecialchars($error, ENT_QUOTES, 'UTF-8'); ?>';
-            if (error) {
-                showNotification(error, 'bg-red-500', true);
-            }
+            var token = '<?php echo TOKEN; ?>'; // Use token from PHP config
+            checkTokenOnLoad(token);
         };
     </script>
 </head>
@@ -168,6 +202,7 @@ unset($_SESSION['error']);
         <div class="text-center mt-4">
             <a href="<?php echo $authorizeURL ?>" class="bg-blue-600 hover:bg-blue-800 text-white font-bold py-2 px-4 rounded">Login with Discord</a>
         </div>
+        <!-- Notification area -->
         <div id="notification" class="notification"></div>
     </div>
 </body>
