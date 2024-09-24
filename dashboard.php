@@ -82,6 +82,11 @@ $reports_stmt = $conn->prepare("SELECT * FROM reports ORDER BY report_date DESC"
 $reports_stmt->execute();
 $reports = $reports_stmt->fetchAll(PDO::FETCH_ASSOC);
 
+$response = [
+    'incidents' => $incidents,
+    'reports' => $reports,
+];
+
 // Logout functionality
 if (isset($_POST['logout'])) {
     session_destroy();
@@ -249,13 +254,12 @@ if (isset($_POST['logout'])) {
 
                     <!-- Main Content -->
                     <div id="mainContent" class="flex-1 flex flex-col ml-64 p-10">
-                        <header class="mb-5">
                             <h1 class="font-bold text-3xl mb-2">Dashboard</h1>
 
                                     <!-- Display version update message -->
                                     <?php if ($isAdmin): ?>
-                                        <div class="bg-gray-900 p-4 rounded-lg shadow-md">
-                                            <div class="<?= $latestVersion === false ? 'bg-red-500' : ($isUpdateAvailable ? 'bg-yellow-500' : 'bg-green-500'); ?> p-4 rounded-lg mb-4 text-center">
+                                        <div class="mb-5 bg-gray-900 p-4 rounded-lg shadow-md">
+                                            <div class="<?= $latestVersion === false ? 'bg-red-500' : ($isUpdateAvailable ? 'bg-yellow-500' : 'bg-green-500'); ?> p-4 rounded-lg text-center">
                                                 <p class="text-black font-semibold"><?= $versionMessage; ?></p>
                                             </div>
                                         </div>
@@ -265,7 +269,23 @@ if (isset($_POST['logout'])) {
                             <div id="content">
                         <div class="bg-gray-900 p-6 rounded-lg shadow-md">
                             <h2 class="text-xl mb-2">Active Calls</h2>
-                            <div id="activeCalls"></div> <!-- Placeholder for incidents -->
+                            <div id="activeCalls">
+                              <?php foreach($incidents as $incident) : ?>
+                                <div class="bg-gray-800 p-4 rounded mb-2">
+                                    <p><strong><?php echo $incident['title'] ?></strong>: <?php echo $incident['description'] ?> - <em>Status: <?php echo $incident['status'] ?></em></p>
+                                    <form method="post">
+                                        <input type="hidden" name="incident_id" value="<?php echo $incident['id'] ?>">
+                                        <select name="status" class="bg-gray-700 text-white p-2 rounded">
+                                            <option value="Open" <?php echo $incident['status'] === "Open" ? "selected" : "" ?>>Open</option>
+                                            <option value="Closed" <?php echo $incident['status'] === "Closed" ? "selected" : "" ?>>Closed</option>
+                                            <option value="On Scene" <?php echo $incident['status'] === "On Scene" ? "selected" : "" ?>>On Scene</option>
+                                            <option value="Enroute" <?php echo $incident['status'] === "Enroute" ? "selected" : "" ?>>Enroute</option>
+                                        </select>
+                                        <button type="submit" name="update_incident_status" class="ml-2 px-3 py-1 bg-blue-500 rounded hover:bg-blue-700">Update Status</button>
+                                    </form>
+                                </div>
+                              <?php endforeach; ?>
+                            </div> <!-- Placeholder for incidents -->
                         </div>
 
                         <div class="bg-gray-900 mt-5 p-5 rounded-lg shadow-lg">
@@ -332,11 +352,14 @@ if (isset($_POST['logout'])) {
         }
     });
 
+    let storedData = JSON.parse(`<?php echo json_encode($response) ?>`);
     function fetchUpdates() {
         fetch('fetch_updates.php')
             .then(response => response.json())
             .then(data => {
                 // Update incidents
+                if(JSON.stringify(data) === JSON.stringify(storedData)) return;
+                storedData = data;
                 const activeCallsElement = document.getElementById('activeCalls');
                 activeCallsElement.innerHTML = ''; // Clear previous content
                 data.incidents.forEach(incident => {
@@ -382,7 +405,7 @@ if (isset($_POST['logout'])) {
     }
 
     // Fetch updates every 5 seconds
-    setInterval(fetchUpdates, 1000);
+    setInterval(fetchUpdates, 5000);
 
 </script>
 
