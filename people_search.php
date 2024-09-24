@@ -29,7 +29,7 @@
         exit;
     }
 
-    $stmt = $conn->prepare("SELECT username, avatar_url, dept, rank, badge_number, super FROM users WHERE id = ?");
+    $stmt = $conn->prepare("SELECT * FROM users WHERE id = ?");
     $stmt->execute([$_SESSION['user_id']]);
     $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -47,8 +47,22 @@
         $search_query = trim($_POST['search_query']);
     
         // Search characters based on the new schema
-        $search_stmt = $conn->prepare("SELECT * FROM characters WHERE first_name LIKE :query OR last_name LIKE :query OR dob LIKE :query OR gender LIKE :query");
-        $search_stmt->execute([':query' => "%$search_query%"]);
+        $search_stmt = $conn->prepare("
+            SELECT * FROM characters 
+            WHERE first_name LIKE ? 
+            OR last_name LIKE ? 
+            OR dob LIKE ? 
+            OR gender LIKE ? 
+            OR mugshot LIKE ?
+        ");
+
+        $search_stmt->execute([
+            "%$search_query%",
+            "%$search_query%",
+            "%$search_query%",
+            "%$search_query%",
+            "%$search_query%"
+        ]);
         $results = $search_stmt->fetchAll(PDO::FETCH_ASSOC);
     
         foreach ($results as $key => $character) {
@@ -74,8 +88,22 @@
     // Search and fetch results
     if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['search_query'])) {
         $search_query = trim($_POST['search_query']);
-        $search_stmt = $conn->prepare("SELECT * FROM characters WHERE first_name LIKE :query OR last_name LIKE :query OR dob LIKE :query OR gender LIKE :query OR mugshot LIKE :query");
-        $search_stmt->execute([':query' => "%$search_query%"]);
+        $search_stmt = $conn->prepare("
+            SELECT * FROM characters 
+            WHERE first_name LIKE ? 
+            OR last_name LIKE ? 
+            OR dob LIKE ? 
+            OR gender LIKE ? 
+            OR mugshot LIKE ?
+        ");
+
+        $search_stmt->execute([
+            "%$search_query%",
+            "%$search_query%",
+            "%$search_query%",
+            "%$search_query%",
+            "%$search_query%"
+        ]);
         $results = $search_stmt->fetchAll(PDO::FETCH_ASSOC);
     }
     // Default positions for the full name
