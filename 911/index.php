@@ -1,59 +1,65 @@
 <?php
-// Include configuration file
-require_once '../config.php';
-
-// Set CORS headers
-header("Access-Control-Allow-Origin: *");
-header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS");
-header("Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With");
-
-// Session configuration
-$secure = true;
-$httponly = true;
-$samesite = 'none';
-$lifetime = 600;
-
-if (PHP_VERSION_ID < 70300) {
-    session_set_cookie_params($lifetime, '/; samesite=' . $samesite, $_SERVER['HTTP_HOST'], $secure, $httponly);
-} else {
-    session_set_cookie_params([
-        'lifetime' => $lifetime,
-        'path' => '/',
-        'domain' => $_SERVER['HTTP_HOST'],
-        'secure' => $secure,
-        'httponly' => $httponly,
-        'samesite' => $samesite
-    ]);
-}
-
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    // Create database connection using PDO from config.php
-    global $conn;
+    // Set CORS headers
+    header("Access-Control-Allow-Origin: *");
+    header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS");
+    header("Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With");
+
+    $secure = true;
+    $httponly = true;
+    $samesite = 'none';
+    $lifetime = 600;
+
+    if (PHP_VERSION_ID < 70300) {
+        session_set_cookie_params($lifetime, '/; samesite=' . $samesite, $_SERVER['HTTP_HOST'], $secure, $httponly);
+    } else {
+        session_set_cookie_params([
+            'lifetime' => $lifetime,
+            'path' => '/',
+            'domain' => $_SERVER['HTTP_HOST'],
+            'secure' => $secure,
+            'httponly' => $httponly,
+            'samesite' => $samesite
+        ]);
+    }
+
+    $servername = '127.0.0.1:3308';
+    $username = 'discord';
+    $password = "1Lollypop1!";
+    $dbname = "nats";
+
+    // Create database connection
+    $conn = new mysqli($servername, $username, $password, $dbname);
+
+    // Check connection
+    if ($conn->connect_error) {
+        die("Connection failed: " . $conn->connect_error);
+    }
 
     // Prepare an INSERT statement
     $sql = "INSERT INTO incidents (title, description) VALUES (?, ?)";
     $stmt = $conn->prepare($sql);
     if ($stmt === false) {
-        die('PDO prepare error: ' . $conn->errorInfo()[2]);
+        die('MySQL prepare error: ' . $conn->error);
     }
 
     // Bind parameters
     $title = $_POST['title'];
     $description = $_POST['description'];
 
-    $stmt->bindParam(1, $title, PDO::PARAM_STR);
-    $stmt->bindParam(2, $description, PDO::PARAM_STR);
+    $stmt->bind_param("ss", $title, $description);
 
     // Execute the statement
     $message = '';
     if (!$stmt->execute()) {
-        $message = 'Execute error: ' . implode(' ', $stmt->errorInfo());
+        $message = 'Execute error: ' . $stmt->error;
     } else {
         $message = "New incident reported successfully";
     }
 
-    // Close statement
-    $stmt = null;
+    // Close statement and connection
+    $stmt->close();
+    $conn->close();
 }
 ?>
 <!DOCTYPE html>

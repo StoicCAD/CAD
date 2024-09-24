@@ -1,5 +1,5 @@
 <?php
-    session_start();
+
     require_once 'config/db.php'; // Ensure db.php provides a valid PDO instance `$conn`
 
     if (!isset($_SESSION['user_id'])) {
@@ -217,27 +217,29 @@
     ];
 
 
-    // Assume database connection is already established in $conn
-    if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['search_query'])) {
-        $search_query = trim($_POST['search_query']);
+// Assume database connection is already established in $conn
+if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['search_query'])) {
+    $search_query = trim($_POST['search_query']);
 
-        // Update SQL statement to fetch vehicle, owner details, and related tickets
-        $search_stmt = $conn->prepare("
-            SELECT v.id, v.plate, JSON_UNQUOTE(JSON_EXTRACT(v.properties, '$.model')) AS model_hash, 
-                c.charid, c.firstname, c.lastname, c.dob, c.driverslicense,
-                t.ticket_id, t.issued_by, t.issue_date, t.violation, t.fine_amount
-            FROM nd_vehicles v
-            JOIN nd_characters c ON v.owner = c.charid
-            LEFT JOIN tickets t ON c.charid = t.char_id
-            WHERE v.plate LIKE :query
-        ");
-        $search_stmt->execute([':query' => "%$search_query%"]);
-        $results = $search_stmt->fetchAll(PDO::FETCH_ASSOC);
+    // Update SQL statement to fetch vehicle, owner details, and related tickets
+    $search_stmt = $conn->prepare("
+        SELECT v.id, v.plate, JSON_UNQUOTE(JSON_EXTRACT(v.properties, '$.model')) AS model_hash, 
+               c.id AS owner_id, c.first_name, c.last_name, c.dob, c.driverslicense,
+               t.ticket_id, t.issued_by, t.issue_date, t.violation, t.fine_amount
+        FROM vehicles v
+        JOIN characters c ON v.owner = c.id
+        LEFT JOIN tickets t ON c.id = t.char_id
+        WHERE v.plate LIKE :query
+    ");
+    
+    $search_stmt->execute([':query' => "%$search_query%"]);
+    $results = $search_stmt->fetchAll(PDO::FETCH_ASSOC);
 
-        // Convert model hashes to names using a predefined hash-to-name mapping array
-        foreach ($results as $key => $row) {
-            $results[$key]['model_name'] = isset($vehicleHashes[$row['model_hash']]) ? $vehicleHashes[$row['model_hash']] : 'Unknown Model';
-        }
+    // Convert model hashes to names using a predefined hash-to-name mapping array
+    foreach ($results as $key => $row) {
+        // Assuming $vehicleHashes is defined elsewhere
+        $results[$key]['model_name'] = isset($vehicleHashes[$row['model_hash']]) ? $vehicleHashes[$row['model_hash']] : 'Unknown Model';
+    }
     }
 ?>
 <!DOCTYPE html>
@@ -246,8 +248,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Vehicle Search - MDT</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body {
             background-image: url('<?php echo $backgroundImage; ?>');
@@ -290,116 +293,53 @@
 </head>
 <body class="font-sans antialiased text-white">
     <div class="flex min-h-screen">
-        <!-- Toggle Button -->
         <button onclick="toggleSidebar()" class="sidebar-button text-white text-xl bg-gray-800 px-4 py-2 rounded">&#9776;</button>
         
         <!-- Sidebar -->
-        <div class="bg-gray-800 w-64 space-y-6 py-7 px-2 fixed inset-y-0 left-0 overflow-y-auto">
-            <div class="text-center">
-                <img src="<?php echo htmlspecialchars($user['avatar_url']); ?>" alt="User Avatar" class="h-20 w-20 rounded-full mx-auto">
-                <h2 class="mt-4 mb-2 font-semibold"><?php echo htmlspecialchars($user['username']); ?></h2>
-                <p><?php echo htmlspecialchars($user['dept']); ?>, <?php echo htmlspecialchars($user['rank']); ?><br>Badge #<?php echo htmlspecialchars($user['badge_number']); ?></p>
-            </div>
-            <nav>
-                <a href="dashboard.php" class="block py-2.5 px-4 rounded hover:bg-blue-600"><i class="fas fa-home mr-2"></i>Dashboard</a>
-                <a href="incidents.php" class="block py-2.5 px-4 rounded hover:bg-blue-600"><i class="fas fa-exclamation-triangle mr-2"></i>Incidents</a>
-                <a href="reports.php" class="block py-2.5 px-4 rounded hover:bg-blue-600"><i class="fas fa-file-alt mr-2"></i>Reports</a>
-                <a href="map.php" class="block py-2.5 px-4 rounded hover:bg-blue-600"><i class="fas fa-map-marked-alt mr-2"></i>Map</a>
-                <!-- Dropdown for Searches -->
-                <div class="relative dropdown">
-                    <a href="#" class="block py-2.5 px-4 rounded hover:bg-blue-600 cursor-pointer"><i class="fas fa-search mr-2"></i>Searches <i class="fa fa-caret-down"></i></a>
-                    <div class="dropdown-menu">
-                        <a href="people_search.php" class="block py-2 px-4 text-sm text-white hover:bg-gray-600">People</a>
-                        <a href="vehicle_search.php" class="block py-2 px-4 text-sm text-white hover:bg-gray-600">Vehicles</a>
-                    </div>
-                </div>
-
-                <a href="settings.php" class="block py-2.5 px-4 rounded hover:bg-blue-600"><i class="fas fa-cog mr-2"></i>Settings</a>
-                <?php if ($user['rank'] == 'Admin'): ?>
-                    <a href="a-dash.php" class="block py-2.5 px-4 rounded hover:bg-blue-600"><i class="fas fa-user-shield mr-2"></i>Admin Dashboard</a>
-                <?php endif; ?>
-
-                <?php if ($user['super'] == 1): ?>
-                    <a href="super-dashboard.php" class="block py-2.5 px-4 rounded hover:bg-blue-600"><i class="fas fa-user-shield mr-2"></i>Supervisor Dashboard</a>
-                <?php endif; ?>
-                
-                <form method="post" action="logout.php" class="mt-5">
-                    <button type="submit" name="logout" class="w-full py-2 bg-red-600 text-white rounded hover:bg-red-700 focus:outline-none">
-                        <i class="fas fa-sign-out-alt mr-2"></i> Logout
-                    </button>
-                </form>
-            </nav>
-        </div>
-        <div>
+        <?php include 'sidebar.php'; ?>
 
         <!-- Main Content -->
-        <!-- Content -->
         <div id="mainContent" class="flex-1 flex flex-col ml-64 p-10 content">
             <header class="mb-5">
-            <h1 class="font-bold text-3xl mb-4">Vehicle Search</h1>
-            <form method="post" class="space-y-4 bg-gray-800 p-6 rounded-lg shadow-lg">
-                <div>
-                    <label for="search_query" class="block">Search by Plate, Make, or Model:</label>
-                    <input type="text" id="search_query" name="search_query" placeholder="Enter search terms" required class="w-full h-10 px-3 rounded bg-gray-700 focus:bg-gray-600 outline-none">
-                </div>
-                <button type="submit" class="px-4 py-2 bg-blue-500 rounded hover:bg-blue-600 focus:outline-none">Search</button>
-            </form>
-            <?php if (!empty($results)): ?>
-                <div class="mt-4 bg-gray-800 p-6 rounded-lg shadow-lg space-y-4">
-                    <h2 class="text-xl font-semibold">Search Results</h2>
-                    <?php foreach ($results as $vehicle_id => $vehicle): ?>
-                        <div class="bg-gray-700 p-4 rounded-lg">
-                            <p><strong>Vehicle ID:</strong> <?php echo htmlspecialchars($vehicle['id']); ?></p>
-                            <p><strong>Plate:</strong> <?php echo htmlspecialchars($vehicle['plate']); ?></p>
-                            <p><strong>Model:</strong> <?php echo htmlspecialchars($vehicle['model_name']); ?></p>
-                            <p><strong>Owner ID:</strong> <?php echo htmlspecialchars($vehicle['charid']); ?></p>
-                            <p><strong>Owner Name:</strong> <?php echo htmlspecialchars($vehicle['firstname']) . ' ' . htmlspecialchars($vehicle['lastname']); ?></p>
-                            <p><strong>Date of Birth:</strong> <?php echo htmlspecialchars($vehicle['dob']); ?></p>
-                            <p><strong>Driver's License:</strong> <?php echo htmlspecialchars($vehicle['driverslicense'] ? 'Yes' : 'No'); ?></p>
-                            <!-- Tickets listing -->
-                            <?php if (!empty($vehicle['tickets'])): ?>
-                                <div class="mt-4">
-                                    <h3 class="text-lg font-semibold">Tickets</h3>
-                                    <?php foreach ($vehicle['tickets'] as $ticket): ?>
-                                        <div class="bg-gray-600 p-3 mt-2 rounded">
-                                            <p><strong>Ticket ID:</strong> <?php echo htmlspecialchars($ticket['ticket_id']); ?></p>
-                                            <p><strong>Issued By:</strong> <?php echo htmlspecialchars($ticket['issued_by']); ?></p>
-                                            <p><strong>Issue Date:</strong> <?php echo htmlspecialchars($ticket['issue_date']); ?></p>
-                                            <p><strong>Violation:</strong> <?php echo htmlspecialchars($ticket['violation']); ?></p>
-                                            <p><strong>Fine Amount:</strong> $<?php echo htmlspecialchars($ticket['fine_amount']); ?></p>
-                                        </div>
-                                    <?php endforeach; ?>
-                                </div>
-                            <?php endif; ?>
-                        </div>
-                    <?php endforeach; ?>
-                </div>
-            <?php endif; ?>
+                <h1 class="font-bold text-3xl mb-4">Vehicle Search</h1>
+                <form id="searchForm" class="space-y-4 bg-gray-800 p-6 rounded-lg shadow-lg">
+                    <div>
+                        <label for="search_query" class="block">Search by Plate, Make, or Model:</label>
+                        <input type="text" id="search_query" name="search_query" placeholder="Enter search terms" required class="w-full h-10 px-3 rounded bg-gray-700 focus:bg-gray-600 outline-none">
+                    </div>
+                    <button type="submit" class="px-4 py-2 bg-blue-500 rounded hover:bg-blue-600 focus:outline-none">Search</button>
+                </form>
+                <div id="results" class="mt-4 bg-gray-800 p-6 rounded-lg shadow-lg space-y-4"></div>
+            </header>
         </div>
     </div>
+
     <script>
+        $(document).ready(function() {
+            $('#searchForm').on('submit', function(event) {
+                event.preventDefault(); // Prevent form submission
+                var query = $('#search_query').val(); // Get the query value
+                
+                $.ajax({
+                    url: 'search.php', // Separate PHP file for handling the search
+                    type: 'POST',
+                    data: { search_query: query },
+                    success: function(data) {
+                        $('#results').html(data); // Update results div with the response
+                    },
+                    error: function(xhr, status, error) {
+                        console.error(error);
+                    }
+                });
+            });
+        });
+
         function toggleSidebar() {
             var sidebar = document.getElementById("sidebar");
             var mainContent = document.getElementById("mainContent");
             sidebar.classList.toggle("hidden-sidebar");
             mainContent.classList.toggle("full-width");
         }
-        // JavaScript to handle dropdown behavior
-        document.addEventListener('DOMContentLoaded', function () {
-            const dropdown = document.querySelector('.dropdown');
-            const dropdownMenu = document.querySelector('.dropdown-menu');
-
-            dropdown.addEventListener('click', function (event) {
-                event.stopPropagation();
-                dropdownMenu.style.display = dropdownMenu.style.display === 'block' ? 'none' : 'block';
-            });
-
-            window.addEventListener('click', function () {
-                if (dropdownMenu.style.display === 'block') {
-                    dropdownMenu.style.display = 'none';
-                }
-            });
-        });
     </script>
 </body>
 </html>

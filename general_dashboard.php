@@ -1,5 +1,5 @@
 <?php
-session_start();
+
 require_once 'config/db.php'; // Ensure this file contains the correct database connection setup
 
 if (!isset($_SESSION['user_id'])) {
@@ -121,7 +121,7 @@ if (isset($_POST['submitApplication'])) {
 
                     <a href="settings.php" class="block py-2.5 px-4 rounded hover:bg-blue-600"><i class="fas fa-cog mr-2"></i>Settings</a>
                     <?php if ($user['rank'] == 'Admin'): ?>
-                        <a href="a-dash.php" class="block py-2.5 px-4 rounded hover:bg-blue-600"><i class="fas fa-user-shield mr-2"></i>Admin Dashboard</a>
+                        <a href="admin-dash.php" class="block py-2.5 px-4 rounded hover:bg-blue-600"><i class="fas fa-user-shield mr-2"></i>Admin Dashboard</a>
                     <?php endif; ?>
 
                     <?php if ($user['super'] == 1): ?>

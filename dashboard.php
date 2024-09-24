@@ -1,5 +1,5 @@
 <?php
-session_start();
+
 require_once 'config/db.php';
 
 // Check if user is logged in
@@ -12,7 +12,7 @@ if (!isset($_SESSION['user_id'])) {
 $user_id = $_SESSION['user_id'];
 
 // Fetch user details from the database
-$stmt = $conn->prepare("SELECT username, avatar_url, dept, rank, badge_number, super FROM users WHERE id = ?");
+$stmt = $conn->prepare("SELECT * FROM users WHERE id = ?");
 $stmt->execute([$user_id]);
 $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -382,7 +382,7 @@ if (isset($_POST['logout'])) {
     }
 
     // Fetch updates every 5 seconds
-    setInterval(fetchUpdates, 5000);
+    setInterval(fetchUpdates, 1000);
 
 </script>
 
