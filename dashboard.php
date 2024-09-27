@@ -29,7 +29,7 @@ if ($user['dept'] === 'CIV') {
 
 
 
-$versionUrl = 'https://github.com/StoicCAD/CAD/blob/nat/version.txt';
+$versionUrl = 'https://raw.githubusercontent.com/StoicCAD/CAD/standalone/version.txt'; // Use the raw content URL
 $currentVersion = '1.0.0';
 
 function getLatestVersion($url) {
@@ -46,9 +46,10 @@ if ($latestVersion === false) {
 } else {
     $isUpdateAvailable = version_compare($latestVersion, $currentVersion, '>');
     $versionMessage = $isUpdateAvailable 
-        ? "A new version ($latestVersion) is available. Please <a href=\"https://github.com/yourusername/yourrepo/releases\" class=\"text-blue-700 underline\" target=\"_blank\">update now</a>!"
+        ? "A new version ($latestVersion) is available. Please <a href=\"https://github.com/StoicCAD/CAD/tree/standalone\" class=\"text-blue-700 underline\" target=\"_blank\">update now</a>!"
         : "Your version ($currentVersion) is up-to-date.";
 }
+
 
 $isAdmin = $user['rank'] == 'Admin';
 
