@@ -21,8 +21,6 @@ if ($user['dept'] === 'CIV') {
     header("Location: general_dashboard.php"); // Redirect to general_dashboard.php if department is CIV
     exit();
 }
-// If department is not CIV, continue on dashboard.php
-require_once 'config/dept_style_config.php'; // Include the department style configurations
 
 
 // Handle POST requests for updates and deletes
@@ -69,9 +67,10 @@ $arrests = $conn->query("SELECT * FROM arrests")->fetchAll(PDO::FETCH_ASSOC);
     <title>Admin Dashboard - MDT</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css">
+    <link rel="stylesheet" href="scrollkit.css">
 <style>
-            body {
-            background-image: url('<?php echo $backgroundImage; ?>');
+        body {
+            background-color: #0d121c; /* Set the background color */
             background-size: cover;
             background-position: center;
             background-repeat: no-repeat;
@@ -156,22 +155,22 @@ $arrests = $conn->query("SELECT * FROM arrests")->fetchAll(PDO::FETCH_ASSOC);
                                     <?php echo $user['id']; ?>
                                 </td>
                                 <td class="px-5 py-2 border-b border-gray-700 text-sm">
-                                    <?php echo htmlspecialchars($user['username']); ?>
+                                    <?php echo htmlspecialchars($user['username'] ?? ''); ?>
                                 </td>
                                 <td class="px-5 py-2 border-b border-gray-700 text-sm">
-                                    <?php echo htmlspecialchars($user['email']); ?>
+                                    <?php echo htmlspecialchars($user['email'] ?? ''); ?>
                                 </td>
                                 <td class="px-5 py-2 border-b border-gray-700 text-sm">
-                                    <img src="<?php echo htmlspecialchars($user['avatar_url']); ?>" alt="Avatar" class="h-8 w-8 rounded-full">
+                                    <img src="<?php echo htmlspecialchars($user['avatar_url'] ?? ''); ?>" alt="Avatar" class="h-8 w-8 rounded-full">
                                 </td>
                                 <td class="px-5 py-2 border-b border-gray-700 text-sm">
-                                    <?php echo htmlspecialchars($user['dept']); ?>
+                                    <?php echo htmlspecialchars($user['dept'] ?? ''); ?>
                                 </td>
                                 <td class="px-5 py-2 border-b border-gray-700 text-sm">
-                                    <?php echo htmlspecialchars($user['rank']); ?>
+                                    <?php echo htmlspecialchars($user['rank'] ?? ''); ?>
                                 </td>
                                 <td class="px-5 py-2 border-b border-gray-700 text-sm">
-                                    <?php echo htmlspecialchars($user['badge_number']); ?>
+                                    <?php echo htmlspecialchars($user['badge_number'] ?? ''); ?>
                                 </td>
                                 <td class="px-5 py-2 border-b border-gray-700 text-sm">
                                     <a href="edits/edit_user.php?user_id=<?php echo $user['id']; ?>" class="text-blue-500 hover:text-blue-400">Edit</a>

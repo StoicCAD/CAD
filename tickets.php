@@ -46,8 +46,7 @@ if ($user['dept'] === 'CIV') {
     exit();
 }
 
-// Include department style configurations
-require_once 'config/dept_style_config.php';
+
 
 // Check for char_id in the URL or POST and handle appropriately
 $char_id = $_GET['char_id'] ?? $_POST['char_id'] ?? null;
@@ -80,9 +79,10 @@ $tickets = $stmt->fetchAll(PDO::FETCH_ASSOC);
     <title>All Tickets</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.0.3/dist/tailwind.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css">
+    <link rel="stylesheet" href="scrollkit.css">
     <style>
         body {
-            background-image: url('<?php echo htmlspecialchars($backgroundImage); ?>');
+            background-color: #0d121c; /* Set the background color */
             background-size: cover;
             background-position: center;
             background-repeat: no-repeat;
@@ -94,7 +94,7 @@ $tickets = $stmt->fetchAll(PDO::FETCH_ASSOC);
             left: 0;
             z-index: 1000;
             width: 100%;
-            background: #4b5563;
+            background: #4b5563; /* Matching Tailwind's gray-700 */
             border-radius: 0 0 0.5rem 0.5rem;
         }
         .sidebar {
@@ -113,10 +113,10 @@ $tickets = $stmt->fetchAll(PDO::FETCH_ASSOC);
         }
         .content {
             transition: margin-left 0.9s ease-out;
-            margin-left: 64px;
+            margin-right: 120px; /* match sidebar width when visible */
         }
         .full-width {
-            margin-left: 0;
+            margin-left: 0; /* full width when sidebar is hidden */
         }
     </style>
 </head>
@@ -130,11 +130,11 @@ $tickets = $stmt->fetchAll(PDO::FETCH_ASSOC);
         
         <!-- Content -->
         <div id="mainContent" class="flex-1 flex flex-col ml-64 p-10 content">
-            <header class="mb-5">
-                <h1 class="font-bold text-3xl mb-4">Tickets Overview</h1>
-                <div class="bg-gray-800 p-6 rounded-lg shadow-lg">
-                    <table class="min-w-full divide-y divide-gray-700">
-                        <thead class="bg-gray-700">
+    <header class="mb-5">
+        <h1 class="font-bold text-3xl mb-4">Tickets Overview</h1>
+        <div class="bg-gray-800 p-6 rounded-lg shadow-lg">
+            <table class="min-w-full divide-y divide-gray-700">
+                <thead class="bg-gray-700">
                             <tr>
                                 <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
                                     Ticket ID

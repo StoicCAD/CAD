@@ -1,5 +1,4 @@
 <?php
-
 require_once 'config/db.php';
 
 if (!isset($_SESSION['user_id'])) {
@@ -16,13 +15,14 @@ if (!$user) {
     exit;
 }
 
-// Redirect civilians to general dashboard
+// Redirect based on user department
 if ($user['dept'] === 'CIV') {
-    header("Location: general_dashboard.php");
+    header("Location: /civ/");
+    exit();
+} elseif ($user['dept'] === 'Dispatch') {
+    header("Location: dispatch.php");
     exit();
 }
-
-require_once 'config/dept_style_config.php';
 
 // Fetch latest version information
 $versionUrl = 'https://github.com/StoicCAD/nat/blob/main/version.txt';
@@ -60,10 +60,11 @@ if (isset($_POST['update_incident_status'], $_POST['incident_id'], $_POST['statu
     }
 }
 
-// Update report status if requested
-if (isset($_POST['update_report_status'])) {
-    $stmt = $conn->prepare("UPDATE reports SET status = ? WHERE report_id = ?");
-    $stmt->execute([$_POST['status'], $_POST['report_id']]);
+// Remove incident if requested
+if (isset($_POST['remove_incident'], $_POST['remove_incident_id'])) {
+    $remove_incident_id = (int)$_POST['remove_incident_id'];
+    $stmt = $conn->prepare("DELETE FROM incidents WHERE id = ?");
+    $stmt->execute([$remove_incident_id]);
 }
 
 // Fetch all incidents and reports
@@ -93,61 +94,85 @@ if (isset($_POST['logout'])) {
 
 // URL for the live map iframe
 $iframeUrl = 'https://thestoicbear-3kgkoo.users.cfx.re/webmap/'; // Update with your live map URL
-    $search_query = '';
-    $results = [];
 
-    if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['search_query'])) {
-        $search_query = trim($_POST['search_query']);
-    
-        // Search characters based on the new schema
-        $search_stmt = $conn->prepare("SELECT * FROM characters WHERE first_name LIKE :query OR last_name LIKE :query OR dob LIKE :query OR gender LIKE :query");
-        $search_stmt->execute([':query' => "%$search_query%"]);
-        $results = $search_stmt->fetchAll(PDO::FETCH_ASSOC);
-    
-        foreach ($results as $key => $character) {
-            $char_id = $character['id'];
-    
-            // Fetch arrest records
-            $arrest_stmt = $conn->prepare("SELECT * FROM arrests WHERE character_id = ?");
-            $arrest_stmt->execute([$char_id]);
-            $results[$key]['arrests'] = $arrest_stmt->fetchAll(PDO::FETCH_ASSOC);
-    
-            // Fetch ticket records
-            $ticket_stmt = $conn->prepare("SELECT * FROM tickets WHERE character_id = ?");
-            $ticket_stmt->execute([$char_id]);
-            $results[$key]['tickets'] = $ticket_stmt->fetchAll(PDO::FETCH_ASSOC);
-    
-            // Fetch report records
-            $report_stmt = $conn->prepare("SELECT * FROM reports WHERE character_id = ?");
-            $report_stmt->execute([$char_id]);
-            $results[$key]['reports'] = $report_stmt->fetchAll(PDO::FETCH_ASSOC);
-        }
+// Search functionality for characters
+$search_query = '';
+$results = [];
+
+// Test with just one condition
+$search_stmt = $conn->prepare("SELECT * FROM characters WHERE first_name LIKE :query");
+
+if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['search_query'])) {
+    $search_query = trim($_POST['search_query']);
+
+    // Prepare the search statement with separate placeholders
+    $search_stmt = $conn->prepare("
+        SELECT * FROM characters 
+        WHERE first_name LIKE :first_name 
+        OR last_name LIKE :last_name 
+        OR dob LIKE :dob 
+        OR gender LIKE :gender
+    ");
+
+    // Create the search term
+    $searchTerm = "%$search_query%";
+
+    // Execute the search with separate parameters
+    try {
+        $search_stmt->execute([
+            ':first_name' => $searchTerm,
+            ':last_name' => $searchTerm,
+            ':dob' => $searchTerm,
+            ':gender' => $searchTerm
+        ]);
+    } catch (PDOException $e) {
+        echo "SQL Error: " . htmlspecialchars($e->getMessage());
+        return; // Stop execution if there is an error
     }
-    
-    // Search and fetch results
-    if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['search_query'])) {
-        $search_query = trim($_POST['search_query']);
-        $search_stmt = $conn->prepare("SELECT * FROM characters WHERE first_name LIKE :query OR last_name LIKE :query OR dob LIKE :query OR gender LIKE :query OR mugshot LIKE :query");
-        $search_stmt->execute([':query' => "%$search_query%"]);
-        $results = $search_stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    $results = $search_stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    // If results are empty
+    if (empty($results)) {
+        echo "No results found.";
     }
-    // Default positions for the full name
-    $fullNameTop = '180px';  // Change this in PHP as needed
-    $fullNameLeft = '45%';  // Change this in PHP as needed
-    $firstNameTop = '70px';
-    $firstNameLeft = '-10%';
 
-    $lastNameTop = '70px';
-    $lastNameLeft = '10%';
+    foreach ($results as $key => $character) {
+        $char_id = $character['id'];
 
-    $dobTop = '127px';
-    $dobLeft = '-10%';
+        // Fetch arrest records
+        $arrest_stmt = $conn->prepare("SELECT * FROM arrests WHERE character_id = ?");
+        $arrest_stmt->execute([$char_id]);
+        $results[$key]['arrests'] = $arrest_stmt->fetchAll(PDO::FETCH_ASSOC);
 
-    $genderTop = '127px';
-    $genderLeft = '5%';
+        // Fetch ticket records
+        $ticket_stmt = $conn->prepare("SELECT * FROM tickets WHERE character_id = ?");
+        $ticket_stmt->execute([$char_id]);
+        $results[$key]['tickets'] = $ticket_stmt->fetchAll(PDO::FETCH_ASSOC);
 
-    $driversLicenseTop = '180px';
-    $driversLicenseLeft = '30%';
+        // Fetch report records
+        $report_stmt = $conn->prepare("SELECT * FROM reports WHERE character_id = ?");
+        $report_stmt->execute([$char_id]);
+        $results[$key]['reports'] = $report_stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+}
+
+
+
+
+// Default positions for the full name (if needed later in your HTML)
+$fullNameTop = '180px';  // Change this in PHP as needed
+$fullNameLeft = '45%';  // Change this in PHP as needed
+$firstNameTop = '70px';
+$firstNameLeft = '-10%';
+$lastNameTop = '70px';
+$lastNameLeft = '10%';
+$dobTop = '127px';
+$dobLeft = '-10%';
+$genderTop = '127px';
+$genderLeft = '5%';
+$driversLicenseTop = '180px';
+$driversLicenseLeft = '30%';
 ?>
 
 <!DOCTYPE html>
@@ -158,9 +183,10 @@ $iframeUrl = 'https://thestoicbear-3kgkoo.users.cfx.re/webmap/'; // Update with 
     <title>Dispatcher Dashboard - MDT</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css">
+    <link rel="stylesheet" href="scrollkit.css">
     <style>
         body {
-            background-image: url('<?php echo $backgroundImage; ?>');
+            background-color: #0d121c; /* Set the background color */
             background-size: cover;
             background-position: center;
             background-repeat: no-repeat;
@@ -363,19 +389,19 @@ $iframeUrl = 'https://thestoicbear-3kgkoo.users.cfx.re/webmap/'; // Update with 
         .collapsible-content form button {
             margin-top: 10px;
         }
-.close {
-color: #aaa;
-float: right;
-font-size: 28px;
-font-weight: bold;
-}
+        .close {
+        color: #aaa;
+        float: right;
+        font-size: 28px;
+        font-weight: bold;
+        }
 
-.close:hover,
-.close:focus {
-color: black;
-text-decoration: none;
-cursor: pointer;
-}
+        .close:hover,
+        .close:focus {
+        color: black;
+        text-decoration: none;
+        cursor: pointer;
+        }
 </style>
 
 </head>
@@ -423,60 +449,61 @@ cursor: pointer;
         <div id="mainContent" class="flex-1 flex flex-col ml-64 p-10 content">
             <header class="mb-10">
                 <!-- Dispatch Search Database Section -->
-                <div class="collapsible" onclick="toggleCollapse('searchDatabaseContent')">Dispatch Search Database</div>
-                <div id="searchDatabaseContent" class="collapsible-content">
-                    <?php if ($isAdmin): ?>
-                        <div class="bg-gray-800 p-6 rounded-lg shadow-lg">
-                            <form method="post" class="space-y-4">
-                                <div>
-                                    <label for="search_query" class="block">Search for an individual:</label>
-                                    <input type="text" id="search_query" name="search_query" value="<?php echo htmlspecialchars($search_query); ?>" required class="w-full h-10 px-3 rounded bg-gray-700 focus:bg-gray-600 outline-none">
-                                </div>
-                                <button type="submit" class="px-4 py-2 bg-blue-500 rounded hover:bg-blue-600 focus:outline-none">Search</button>
-                            </form>
-                        </div>
-                        <div id="idModal" class="modal">
-                            <div class="modal-content">
-                                <span class="close">&times;</span>
-                                <img src="https://raw.githubusercontent.com/jonassvensson4/jsfour-idcard/master/html/assets/images/idcard.png" style="width: 100%; height: auto; position: relative;">
-                                <img id="mugshotImage" src="" alt="Mugshot">
-                                <div id="fullName" class="modal-data signature" style="top: <?php echo $fullNameTop; ?>; left: <?php echo $fullNameLeft; ?>;">Full Name:</div>
-                                <div id="firstName" class="modal-dataN" style="top: <?php echo $firstNameTop; ?>; left: <?php echo $firstNameLeft; ?>;">First Name:</div>
-                                <div id="lastName" class="modal-dataN" style="top: <?php echo $lastNameTop; ?>; left: <?php echo $lastNameLeft; ?>;">Last Name:</div>
-                                <div id="dob" class="modal-data" style="top: <?php echo $dobTop; ?>; left: <?php echo $dobLeft; ?>;">DOB:</div>
-                                <div id="gender" class="modal-data" style="top: <?php echo $genderTop; ?>; left: <?php echo $genderLeft; ?>;">Gender:</div>
-                                <div id="driverslicense" class="modal-data" style="top: <?php echo $driversLicenseTop; ?>; left: <?php echo $driversLicenseLeft; ?>;">DL Status:</div>
-                            </div>
-                        </div>
-                        <?php if (!empty($message)): ?>
-                            <div class="mt-4 bg-gray-800 p-4 rounded-lg shadow-lg"><?php echo htmlspecialchars($message); ?></div>
-                        <?php endif; ?>
-                        <!-- Search Results -->
-                        <?php if (!empty($results)): ?>
-                            <div class="bg-gray-800 mt-4 p-6 rounded-lg shadow-lg space-y-4">
-                                <h2 class="text-xl font-semibold">Search Results</h2>
-                                <?php foreach ($results as $row): ?>
-                                    <div class="bg-gray-700 p-4 rounded-lg flex items-center">
-                                        <div class="idcard-image" onclick="showModal('<?php echo htmlspecialchars($row['first_name']); ?>', '<?php echo htmlspecialchars($row['last_name']); ?>', '<?php echo htmlspecialchars($row['dob']); ?>', '<?php echo htmlspecialchars($row['gender']); ?>', '<?php echo htmlspecialchars($row['driverslicense']); ?>', '<?php echo htmlspecialchars($row['mugshot']); ?>')">
-                                            <img src="https://raw.githubusercontent.com/jonassvensson4/jsfour-idcard/master/html/assets/images/idcard.png" alt="ID Card" style="width: 100px;">
-                                        </div>
-                                        <div class="ml-4">
-                                            <p><strong>Name:</strong> <?php echo htmlspecialchars($row['first_name'] . ' ' . $row['last_name']); ?></p>
-                                            <p><strong>Date of Birth:</strong> <?php echo htmlspecialchars($row['dob']); ?></p>
-                                            <p><strong>Gender:</strong> <?php echo htmlspecialchars($row['gender']); ?></p>
-                                            <p><strong>DL Status:</strong> <?php echo htmlspecialchars($row['driverslicense']); ?></p>
-                                        </div>
-                                        <div>
-                                            <a href="tickets.php" class="px-4 py-2 bg-blue-500 rounded hover:bg-blue-600">Tickets</a>
-                                            <a href="add/add_ticket.php?char_id=<?php echo htmlspecialchars($row['id']); ?>" class="px-4 py-2 bg-blue-500 rounded hover:bg-blue-600">Add Ticket</a>
-                                            <a href="add/add_arrest.php?char_id=<?php echo htmlspecialchars($row['id']); ?>" class="px-4 py-2 bg-red-500 rounded hover:bg-red-600">Arrests</a>
-                                        </div>
-                                    </div>
-                                <?php endforeach; ?>
-                            </div>
-                        <?php endif; ?>
-                    <?php endif; ?>
+<div class="collapsible" onclick="toggleCollapse('searchDatabaseContent')">Dispatch Search Database</div>
+<div id="searchDatabaseContent" class="collapsible-content <?php echo !empty($results) || !empty($search_query) ? 'expanded' : ''; ?>">
+    <?php if ($isAdmin): ?>
+        <div class="bg-gray-800 p-6 rounded-lg shadow-lg">
+            <form method="post" class="space-y-4">
+                <div>
+                    <label for="search_query" class="block">Search for an individual:</label>
+                    <input type="text" id="search_query" name="search_query" value="<?php echo htmlspecialchars($search_query); ?>" required class="w-full h-10 px-3 rounded bg-gray-700 focus:bg-gray-600 outline-none">
                 </div>
+                <button type="submit" class="px-4 py-2 bg-blue-500 rounded hover:bg-blue-600 focus:outline-none">Search</button>
+            </form>
+        </div>
+        <div id="idModal" class="modal">
+            <div class="modal-content">
+                <span class="close">&times;</span>
+                <img src="https://raw.githubusercontent.com/jonassvensson4/jsfour-idcard/master/html/assets/images/idcard.png" style="width: 100%; height: auto; position: relative;">
+                <img id="mugshotImage" src="" alt="Mugshot">
+                <div id="fullName" class="modal-data signature" style="top: <?php echo $fullNameTop; ?>; left: <?php echo $fullNameLeft; ?>;">Full Name:</div>
+                <div id="firstName" class="modal-dataN" style="top: <?php echo $firstNameTop; ?>; left: <?php echo $firstNameLeft; ?>;">First Name:</div>
+                <div id="lastName" class="modal-dataN" style="top: <?php echo $lastNameTop; ?>; left: <?php echo $lastNameLeft; ?>;">Last Name:</div>
+                <div id="dob" class="modal-data" style="top: <?php echo $dobTop; ?>; left: <?php echo $dobLeft; ?>;">DOB:</div>
+                <div id="gender" class="modal-data" style="top: <?php echo $genderTop; ?>; left: <?php echo $genderLeft; ?>;">Gender:</div>
+                <div id="driverslicense" class="modal-data" style="top: <?php echo $driversLicenseTop; ?>; left: <?php echo $driversLicenseLeft; ?>;">DL Status:</div>
+            </div>
+        </div>
+        <?php if (!empty($message)): ?>
+            <div class="mt-4 bg-gray-800 p-4 rounded-lg shadow-lg"><?php echo htmlspecialchars($message); ?></div>
+        <?php endif; ?>
+        <!-- Search Results -->
+        <?php if (!empty($results)): ?>
+            <div class="bg-gray-800 mt-4 p-6 rounded-lg shadow-lg space-y-4">
+                <h2 class="text-xl font-semibold">Search Results</h2>
+                <?php foreach ($results as $row): ?>
+                    <div class="bg-gray-700 p-4 rounded-lg flex items-center">
+                        <div class="idcard-image" onclick="showModal('<?php echo htmlspecialchars($row['first_name']); ?>', '<?php echo htmlspecialchars($row['last_name']); ?>', '<?php echo htmlspecialchars($row['dob']); ?>', '<?php echo htmlspecialchars($row['gender']); ?>', '<?php echo htmlspecialchars($row['driverslicense']); ?>', '<?php echo htmlspecialchars($row['mugshot']); ?>')">
+                            <img src="https://raw.githubusercontent.com/jonassvensson4/jsfour-idcard/master/html/assets/images/idcard.png" alt="ID Card" style="width: 100px;">
+                        </div>
+                        <div class="ml-4">
+                            <p><strong>Name:</strong> <?php echo htmlspecialchars($row['first_name'] . ' ' . $row['last_name']); ?></p>
+                            <p><strong>Date of Birth:</strong> <?php echo htmlspecialchars($row['dob']); ?></p>
+                            <p><strong>Gender:</strong> <?php echo htmlspecialchars($row['gender']); ?></p>
+                            <p><strong>DL Status:</strong> <?php echo htmlspecialchars($row['driverslicense']); ?></p>
+                        </div>
+                        <div>
+                            <a href="tickets.php" class="px-4 py-2 bg-blue-500 rounded hover:bg-blue-600">Tickets</a>
+                            <a href="add/add_ticket.php?char_id=<?php echo htmlspecialchars($row['id']); ?>" class="px-4 py-2 bg-blue-500 rounded hover:bg-blue-600">Add Ticket</a>
+                            <a href="add/add_arrest.php?char_id=<?php echo htmlspecialchars($row['id']); ?>" class="px-4 py-2 bg-red-500 rounded hover:bg-red-600">Arrests</a>
+                        </div>
+                    </div>
+                <?php endforeach; ?>
+            </div>
+        <?php endif; ?>
+    <?php endif; ?>
+</div>
+
 
                 <!-- Live Map Section -->
                 <div class="collapsible" onclick="toggleCollapse('liveMapContent')">Live Map</div>
@@ -495,6 +522,7 @@ cursor: pointer;
                                 <h3 class="text-lg font-semibold"><?php echo htmlspecialchars($incident['title']); ?></h3>
                                 <p>Status: <?php echo htmlspecialchars($incident['status']); ?></p>
                                 <p>Created At: <?php echo htmlspecialchars($incident['created_at']); ?></p>
+                                
                                 <!-- Update Incident Status Form -->
                                 <form method="post" class="mt-2">
                                     <input type="hidden" name="incident_id" value="<?php echo htmlspecialchars($incident['id']); ?>" />
@@ -506,12 +534,19 @@ cursor: pointer;
                                     </select>
                                     <button type="submit" name="update_incident_status" class="mt-2 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-700">Update Status</button>
                                 </form>
+                                
+                                <!-- Remove Incident Form -->
+                                <form method="post" class="mt-2">
+                                    <input type="hidden" name="remove_incident_id" value="<?php echo htmlspecialchars($incident['id']); ?>" />
+                                    <button type="submit" name="remove_incident" class="mt-2 px-4 py-2 bg-red-500 text-white rounded hover:bg-red-700">Remove Incident</button>
+                                </form>
                             </div>
                         <?php endforeach; ?>
                     <?php else: ?>
                         <p class="text-gray-400">No active incidents.</p>
                     <?php endif; ?>
                 </div>
+
 
                 <!-- Reports Section -->
                 <div class="collapsible" onclick="toggleCollapse('reportsContent')">Reports</div>
@@ -551,9 +586,27 @@ cursor: pointer;
         }
 
         function toggleCollapse(contentId) {
-            var content = document.getElementById(contentId);
-            content.style.display = content.style.display === 'block' ? 'none' : 'block';
-        }
+    var content = document.getElementById(contentId);
+    
+    // Check if the content is currently displayed
+    if (content.style.display === 'block') {
+        content.style.display = 'none';
+    } else {
+        content.style.display = 'block';
+    }
+
+    // Keep the content open if search results or query are present
+    const searchQueryInput = document.getElementById('search_query');
+    if (searchQueryInput && searchQueryInput.value) {
+        content.style.display = 'block'; // Ensure it's open when there is a query
+    }
+
+    // Additionally, check if there are results displayed
+    if (document.querySelectorAll('.bg-gray-800.mt-4.p-6').length > 0) {
+        content.style.display = 'block'; // Ensure it's open when there are results
+    }
+}
+
 
         // Function to show the modal with user details
         function showModal(firstname, lastname, dob, gender, driverslicense, mugshot) {

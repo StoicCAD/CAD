@@ -37,12 +37,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 echo "Configuration file updated successfully.";
                 break;
 
-            case 'edit_dept_style':
-                $deptStyleFile = 'config/dept_style_config.php'; // Corrected file path
-                $deptStyleContent = $_POST['dept_style_content'];
-                file_put_contents($deptStyleFile, $deptStyleContent);
-                echo "Department style configuration file updated successfully.";
-                break;
+
 
             default:
                 echo "Invalid action.";
@@ -54,7 +49,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 // Get the contents of the configuration files for editing
 $configContent = file_get_contents('config/config.php');
-$deptStyleContent = file_get_contents('config/dept_style_config.php');
+
 
 // Fallback for background image
 $backgroundImage = isset($backgroundImage) ? $backgroundImage : 'default_background.png';
@@ -66,6 +61,7 @@ $backgroundImage = isset($backgroundImage) ? $backgroundImage : 'default_backgro
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Configuration Edit</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="scrollkit.css">
     <style>
         body {
             background-image: url('<?php echo $backgroundImage; ?>');
@@ -97,50 +93,6 @@ $backgroundImage = isset($backgroundImage) ? $backgroundImage : 'default_backgro
             left: 10px;
             z-index: 20;
         }
-        .content {
-            transition: margin-left 0.3s ease-out;
-            margin-left: 16rem; /* match sidebar width when visible */
-        }
-        .full-width {
-            margin-left: 0; /* full width when sidebar is hidden */
-        }
-        /* Custom scrollbar styles */
-        .sidebar::-webkit-scrollbar {
-            width: 8px;
-        }
-        .sidebar::-webkit-scrollbar-thumb {
-            background-color: #4b5563;
-            border-radius: 10px;
-        }
-        .sidebar::-webkit-scrollbar-track {
-            background-color: #1f2937;
-        }
-        .content::-webkit-scrollbar {
-            width: 8px;
-        }
-        .content::-webkit-scrollbar-thumb {
-            background-color: #4b5563;
-            border-radius: 10px;
-        }
-        .content::-webkit-scrollbar-track {
-            background-color: #1f2937;
-        }
-        /* Firefox */
-        .sidebar, .content {
-            scrollbar-width: thin;
-            scrollbar-color: #4b5563 #1f2937;
-        }
-        body::-webkit-scrollbar {
-            width: 8px;
-        }
-        body::-webkit-scrollbar-thumb {
-            background-color: #4b5563;
-            border-radius: 10px;
-        }
-        body::-webkit-scrollbar-track {
-            background-color: #1f2937;
-        }
-        /* Updated styles for text areas */
 textarea {
     background-color: #2d3748; /* Dark background for better contrast */
     color: #e2e8f0; /* Light text color */

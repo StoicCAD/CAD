@@ -1,5 +1,4 @@
 <?php
-session_start();
 require_once '../config/db.php';
 
 // Get user details
@@ -168,29 +167,42 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <!-- Toggle Button for Mobile -->
         <button id="toggleSidebarMobile" class="sidebar-button text-white text-xl bg-gray-800 px-4 py-2 rounded hidden lg:block">&#9776;</button>
         
-        <!-- Sidebar -->
         <div id="sidebar" class="bg-gray-800 w-64 space-y-6 py-7 px-2 fixed inset-y-0 left-0 overflow-y-auto lg:static lg:w-64 hidden sm:block">
-            <div class="text-center">
-                <img src="<?php echo htmlspecialchars($user['avatar_url'] ?? 'default_avatar.png'); ?>" alt="User Avatar" class="h-20 w-20 rounded-full mx-auto">
-                <h2 class="mt-4 mb-2 font-semibold"><?php echo htmlspecialchars($user['username'] ?? 'Unknown User'); ?></h2>
-                <p><?php echo htmlspecialchars($user['dept'] ?? 'No Department'); ?>, <?php echo htmlspecialchars($user['rank'] ?? 'No Rank'); ?></p>
-            </div>
-            <div class="mt-6 space-y-2">
-                <a href="../dmv-test/" class="flex items-center py-2.5 px-4 rounded hover:bg-blue-600 rounded">
-                    <i class="fas fa-id-card-alt mr-2"></i>
-                    DMV Test
-                </a>
-                <a href="../new-character/" class="flex items-center py-2.5 px-4 rounded hover:bg-blue-600 rounded">
-                    <i class="fas fa-user-plus mr-2"></i>
-                    New Character
-                </a>
-            </div>
-            <form method="post" action="logout.php" class="mt-5">
-                <button type="submit" name="logout" class="w-full py-2 bg-red-600 text-white rounded hover:bg-red-700 focus:outline-none">
-                    <i class="fas fa-sign-out-alt mr-2"></i> Logout
-                </button>
-            </form>
-        </div>
+    <div class="text-center">
+        <img src="<?php echo htmlspecialchars($user['avatar_url'] ?? 'default_avatar.png'); ?>" alt="User Avatar" class="h-20 w-20 rounded-full mx-auto">
+        <h2 class="mt-4 mb-2 font-semibold"><?php echo htmlspecialchars($user['username'] ?? 'Unknown User'); ?></h2>
+        <p><?php echo htmlspecialchars($user['dept'] ?? 'No Department'); ?>, <?php echo htmlspecialchars($user['rank'] ?? 'No Rank'); ?></p>
+    </div>
+    <div class="mt-6 space-y-2">
+    <a href="../dmv-test/" class="flex items-center py-2.5 px-4 rounded hover:bg-blue-600 rounded">
+        <i class="fas fa-id-card-alt mr-2"></i>
+        DMV Test
+    </a>
+    <a href="../new-character/" class="flex items-center py-2.5 px-4 rounded hover:bg-blue-600 rounded">
+        <i class="fas fa-user-plus mr-2"></i>
+        New Character
+    </a>
+
+    <?php
+    // Define LEO departments
+    $leoDepartments = ['LSPD', 'SASP', 'BCSO']; // Add other LEO departments as needed
+
+    // Check if the user's department includes any LEO department
+    $user_departments = explode(',', $user['dept']);
+    if (array_intersect($user_departments, $leoDepartments)): ?>
+        <a href="../dashboard.php" class="flex items-center py-2.5 px-4 rounded hover:bg-blue-600 rounded">
+            <i class="fas fa-shield-alt mr-2"></i>
+            LEO Dashboard
+        </a>
+    <?php endif; ?>
+</div>
+    <form method="post" action="logout.php" class="mt-5">
+        <button type="submit" name="logout" class="w-full py-2 bg-red-600 text-white rounded hover:bg-red-700 focus:outline-none">
+            <i class="fas fa-sign-out-alt mr-2"></i> Logout
+        </button>
+    </form>
+</div>
+
 
         <!-- Main Content -->
         <div id="mainContent" class="flex-1 flex flex-col ml-0 sm:ml-64 p-4 sm:p-10">

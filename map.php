@@ -23,8 +23,7 @@
         header("Location: general_dashboard.php"); // Redirect to general_dashboard.php if department is CIV
         exit();
     }
-    // If department is not CIV, continue on dashboard.php
-    require 'config/dept_style_config.php'; // Include the department style configurations
+
 
 
     $stmt = $conn->prepare("SELECT * FROM arrests ORDER BY arrest_date DESC");
@@ -40,9 +39,10 @@
     <title>All Arrests</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css">
+    <link rel="stylesheet" href="scrollkit.css">
     <style>
         body {
-            background-image: url('<?php echo $backgroundImage; ?>');
+            background-color: #0d121c; /* Set the background color */
             background-size: cover;
             background-position: center;
             background-repeat: no-repeat;

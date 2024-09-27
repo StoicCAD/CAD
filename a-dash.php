@@ -71,9 +71,10 @@ $arrests = $conn->query("SELECT * FROM arrests")->fetchAll(PDO::FETCH_ASSOC);
     <title>Admin Dashboard - MDT</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css">
+    <link rel="stylesheet" href="scrollkit.css">
 <style>
-            body {
-            background-image: url('<?php echo $backgroundImage; ?>');
+        body {
+            background-color: #0d121c; /* Set the background color */
             background-size: cover;
             background-position: center;
             background-repeat: no-repeat;

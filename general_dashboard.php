@@ -82,6 +82,7 @@ if (isset($_POST['submitApplication'])) {
     <title>CIV Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css">
+    <link rel="stylesheet" href="scrollkit.css">
     <style>
       .dropdown-menu {
           display: none;

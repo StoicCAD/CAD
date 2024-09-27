@@ -17,7 +17,6 @@
         exit;
     }
 
-    require_once 'config/dept_style_config.php';
 
     $search_query = '';
     $results = [];
@@ -250,10 +249,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['search_query'])) {
     <title>Vehicle Search - MDT</title>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css">
+    <link rel="stylesheet" href="scrollkit.css">
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body {
-            background-image: url('<?php echo $backgroundImage; ?>');
+            background-color: #0d121c; /* Set the background color */
             background-size: cover;
             background-position: center;
             background-repeat: no-repeat;

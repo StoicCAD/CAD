@@ -38,7 +38,7 @@
         exit;
     }
 
-    require_once 'config/dept_style_config.php';
+
 
     $search_query = '';
     $results = [];
@@ -134,7 +134,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css">
     <style>
         body {
-            background-image: url('<?php echo $backgroundImage; ?>');
+            background-color: #0d121c; /* Set the background color */
             background-size: cover;
             background-position: center;
             background-repeat: no-repeat;
