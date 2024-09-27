@@ -30,7 +30,7 @@ if ($user['dept'] === 'CIV') {
 
 
 $versionUrl = 'https://raw.githubusercontent.com/StoicCAD/CAD/standalone/version.txt'; // Use the raw content URL
-$currentVersion = '1.0.0';
+$currentVersion = '1.1.1';
 
 function getLatestVersion($url) {
     $version = @file_get_contents($url);
