@@ -1,5 +1,5 @@
 <?php
-session_start();
+
 require_once '../config/db.php';
 
 if (!isset($_SESSION['user_id'])) {
@@ -8,7 +8,7 @@ if (!isset($_SESSION['user_id'])) {
 }
 
 // Fetch detailed user information including dept, rank, and badge number
-$stmt = $conn->prepare("SELECT username, avatar_url, dept, rank, badge_number FROM users WHERE id = ?");
+$stmt = $conn->prepare("SELECT * FROM users WHERE id = ?");
 $stmt->execute([$_SESSION['user_id']]);
 $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -17,14 +17,13 @@ if (!$user) {
     exit;
 }
 
-// Redirection logic based on the department
-if ($user['dept'] === 'CIV') {
-    header("Location: general_dashboard.php"); // Redirect to general_dashboard.php if department is CIV
-    exit();
-}
+    // Redirection logic based on the department
+    if ($user['active_department'] === 'CIV') {
+        header("Location: general_dashboard.php"); // Redirect to general_dashboard.php if department is CIV
+        exit();
+    }
 
-// If department is not CIV, continue on dashboard.php
-require_once '../config/dept_style_config.php'; // Include the department style configurations
+
 
 $char_id = $_GET['char_id'] ?? null; // Get char_id from URL
 
@@ -54,7 +53,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && $char_id) {
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css">
     <style>
         body {
-            background-image: url('<?php echo $backgroundImage; ?>');
+            background-color: #0d121c; /* Set the background color */
             background-size: cover;
             background-position: center;
             background-repeat: no-repeat;
@@ -98,7 +97,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && $char_id) {
         <button onclick="toggleSidebar()" class="sidebar-button text-white text-xl bg-gray-800 px-4 py-2 rounded">&#9776; Toggle</button>
         
         <!-- Sidebar -->
-        <?php include 'sidebar.php'; ?>
+        <?php include '../sidebar.php'; ?>
         <!-- Content -->
         <div id="mainContent" class="flex-1 flex flex-col ml-64 p-10 content">
             <header class="mb-5">
