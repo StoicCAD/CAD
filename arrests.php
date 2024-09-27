@@ -8,7 +8,7 @@
     }
 
     // Fetch detailed user information including dept, rank, and badge number
-    $stmt = $conn->prepare("SELECT username, avatar_url, dept, rank, badge_number, super FROM users WHERE id = ?");
+    $stmt = $conn->prepare("SELECT * FROM users WHERE id = ?");
     $stmt->execute([$_SESSION['user_id']]);
     $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
