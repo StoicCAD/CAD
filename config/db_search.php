@@ -20,7 +20,7 @@ if (PHP_VERSION_ID < 70300) {
 }
 
 // Include database connection details
-require_once('database.php');
+require_once('config.php');
 
 // Now you can use $conn PDO object for database operations
 ?>

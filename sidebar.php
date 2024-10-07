@@ -1,15 +1,39 @@
 <!-- Sidebar -->
 <div id="sidebar" class="bg-gray-800 w-64 space-y-6 py-7 px-2 fixed inset-y-0 left-0 overflow-y-auto sidebar">
     <div class="text-center">
-        <!-- Ensure values are not null before using htmlspecialchars -->
         <img src="<?php echo htmlspecialchars($user['avatar_url'] ?? 'default_avatar.png'); ?>" alt="User Avatar" class="h-20 w-20 rounded-full mx-auto">
         <h2 class="mt-4 mb-2 font-semibold"><?php echo htmlspecialchars($user['username'] ?? 'Unknown User'); ?></h2>
         <p>
-            <?php echo htmlspecialchars($user['active_department'] ?? 'No Active Department'); ?>, 
-            <?php echo htmlspecialchars($user['user_id'] ?? 'No Department'); ?>, 
+            <?php 
+            echo htmlspecialchars($user['active_department'] ?? 'No Active Department'); ?>, 
             <?php echo htmlspecialchars($user['rank'] ?? 'No Rank'); ?><br>
             Badge #<?php echo htmlspecialchars($user['badge_number'] ?? 'No Badge'); ?>
         </p>
+        
+        <!-- Fetch user's departments -->
+        <?php 
+        $userDepartments = explode(',', $user['dept']); // Assuming 'dept' is a comma-separated list of departments
+        ?>
+
+        <!-- Change Active Department Form, shown only if no active department -->
+        <?php if (empty($user['active_department'])): ?>
+        <form action="settings.php" method="post" class="mt-5">
+            <div class="mb-4">
+                <label class="block text-white">Active Department:</label>
+                <select name="active_department" required class="w-full mt-2 p-3 rounded bg-gray-700 text-white">
+                    <option value="">Select an active department</option>
+                    <?php foreach ($userDepartments as $dept): ?>
+                        <option value="<?php echo htmlspecialchars($dept); ?>" <?php echo ($dept === $user['active_department']) ? 'selected' : ''; ?>>
+                            <?php echo htmlspecialchars($dept); ?>
+                        </option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
+            <button type="submit" name="update_department" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                Update Department
+            </button>
+        </form>
+        <?php endif; ?>
     </div>
 
     <nav>
@@ -22,7 +46,6 @@
         <a href="incidents.php" class="block py-2.5 px-4 rounded hover:bg-blue-600"><i class="fas fa-exclamation-triangle mr-2"></i>Active Calls</a>
         <a href="reports.php" class="block py-2.5 px-4 rounded hover:bg-blue-600"><i class="fas fa-file-alt mr-2"></i>Reports</a>
         <a href="map.php" class="block py-2.5 px-4 rounded hover:bg-blue-600"><i class="fas fa-map-marked-alt mr-2"></i>Map</a>
-
         <!-- Dropdown for Searches -->
         <div class="relative dropdown">
             <a href="#" class="block py-2.5 px-4 rounded hover:bg-blue-600 cursor-pointer"><i class="fas fa-search mr-2"></i>Searches <i class="fa fa-caret-down"></i></a>
@@ -31,14 +54,10 @@
                 <a href="vehicle_search.php" class="block py-2 px-4 text-sm text-white hover:bg-gray-600">Vehicles</a>
             </div>
         </div>
-
         <a href="settings.php" class="block py-2.5 px-4 rounded hover:bg-blue-600"><i class="fas fa-cog mr-2"></i>Settings</a>
 
         <?php 
-        // Handle multiple departments
-        $departments = explode(',', $user['dept']); // Split the departments string into an array
-
-        // Check if user is in 'CIV' department
+        $departments = explode(',', $user['dept']);
         if (in_array('CIV', $departments)): ?>
             <a href="civ/" class="block py-2.5 px-4 rounded hover:bg-blue-600"><i class="fas fa-car mr-2"></i>Civilian Dashboard</a>
         <?php endif; ?>
@@ -51,11 +70,9 @@
             <a href="dispatch.php" class="block py-2.5 px-4 rounded hover:bg-blue-600"><i class="fas fa-user-shield mr-2"></i>Dispatch Dashboard</a>
         <?php endif; ?>
 
-
         <?php if ($user['super'] == 1): ?>
             <a href="super-dashboard.php" class="block py-2.5 px-4 rounded hover:bg-blue-600"><i class="fas fa-user-shield mr-2"></i>Supervisor Dashboard</a>
         <?php endif; ?>
-        
         
         <form method="post" action="logout.php" class="mt-5">
             <button type="submit" name="logout" class="w-full py-2 bg-red-600 text-white rounded hover:bg-red-700 focus:outline-none">
@@ -64,3 +81,24 @@
         </form>
     </nav>
 </div>
+
+<!-- Script for toggling the dropdown -->
+<script>
+    function toggleDropdown(id) {
+        var dropdown = document.getElementById(id);
+        dropdown.classList.toggle('hidden');
+    }
+
+    // Close the dropdown if the user clicks outside of it
+    window.onclick = function(event) {
+        if (!event.target.matches('.dropdown button')) {
+            var dropdowns = document.getElementsByClassName("dropdown-menu");
+            for (var i = 0; i < dropdowns.length; i++) {
+                var openDropdown = dropdowns[i];
+                if (!openDropdown.classList.contains('hidden')) {
+                    openDropdown.classList.add('hidden');
+                }
+            }
+        }
+    }
+</script>

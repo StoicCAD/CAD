@@ -10,7 +10,7 @@ CREATE TABLE IF NOT EXISTS `users` (
   `avatar_url` varchar(255) DEFAULT NULL,
   `password` varchar(255) NOT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
-  `dept` varchar(100) DEFAULT 'CIV',
+  `dept` varchar(100) DEFAULT 'lspd',
   `active_department` varchar(50) DEFAULT NULL,
   `rank` varchar(100) DEFAULT NULL,
   `badge_number` varchar(50) DEFAULT NULL,
@@ -18,7 +18,7 @@ CREATE TABLE IF NOT EXISTS `users` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `discord_id` (`discord_id`),
   UNIQUE KEY `email` (`email`)
-) ENGINE=InnoDB AUTO_INCREMENT=20 DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB AUTO_INCREMENT=31 DEFAULT CHARSET=utf8mb4;
 
 CREATE TABLE IF NOT EXISTS `characters` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
@@ -30,25 +30,14 @@ CREATE TABLE IF NOT EXISTS `characters` (
   `dob` varchar(50) DEFAULT NULL,
   `gender` varchar(50) DEFAULT NULL,
   `dept` varchar(50) DEFAULT NULL,
+  `active_department` varchar(50) DEFAULT NULL,
   `level` text DEFAULT NULL,
   `lastLoc` varchar(250) DEFAULT NULL,
   `mugshot` text DEFAULT NULL,
   `driverslicense` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `id` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=utf8mb4;
-
-CREATE TABLE IF NOT EXISTS `arrests` (
-  `arrest_id` int(11) NOT NULL AUTO_INCREMENT,
-  `character_id` int(11) NOT NULL,
-  `officer_name` varchar(100) DEFAULT NULL,
-  `arrest_date` datetime DEFAULT NULL,
-  `charges` text DEFAULT NULL,
-  `bail_amount` decimal(10,2) DEFAULT NULL,
-  PRIMARY KEY (`arrest_id`),
-  KEY `character_id` (`character_id`),
-  CONSTRAINT `arrests_ibfk_1` FOREIGN KEY (`character_id`) REFERENCES `characters` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB AUTO_INCREMENT=16 DEFAULT CHARSET=utf8mb4;
 
 CREATE TABLE IF NOT EXISTS `civilians` (
   `civilian_id` int(10) NOT NULL AUTO_INCREMENT,
@@ -77,7 +66,19 @@ CREATE TABLE IF NOT EXISTS `incidents` (
   `reported_by` int(11) NOT NULL,
   `status` varchar(255) DEFAULT 'Open',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=63 DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB AUTO_INCREMENT=68 DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS `arrests` (
+  `arrest_id` int(11) NOT NULL AUTO_INCREMENT,
+  `character_id` int(11) NOT NULL,
+  `officer_name` varchar(100) DEFAULT NULL,
+  `arrest_date` datetime DEFAULT NULL,
+  `charges` text DEFAULT NULL,
+  `bail_amount` decimal(10,2) DEFAULT NULL,
+  PRIMARY KEY (`arrest_id`),
+  KEY `character_id` (`character_id`),
+  CONSTRAINT `arrests_ibfk_1` FOREIGN KEY (`character_id`) REFERENCES `characters` (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4;
 
 CREATE TABLE IF NOT EXISTS `reports` (
   `report_id` int(11) NOT NULL AUTO_INCREMENT,
@@ -90,7 +91,7 @@ CREATE TABLE IF NOT EXISTS `reports` (
   PRIMARY KEY (`report_id`),
   KEY `character_id` (`character_id`),
   CONSTRAINT `reports_ibfk_1` FOREIGN KEY (`character_id`) REFERENCES `characters` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB AUTO_INCREMENT=15 DEFAULT CHARSET=utf8mb4;
 
 CREATE TABLE IF NOT EXISTS `tickets` (
   `ticket_id` int(11) NOT NULL AUTO_INCREMENT,
@@ -102,4 +103,17 @@ CREATE TABLE IF NOT EXISTS `tickets` (
   PRIMARY KEY (`ticket_id`),
   KEY `character_id` (`character_id`),
   CONSTRAINT `tickets_ibfk_1` FOREIGN KEY (`character_id`) REFERENCES `characters` (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS `vehicles` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `plate` varchar(15) NOT NULL,
+  `properties` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL CHECK (json_valid(`properties`)),
+  `owner` int(11) DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `plate` (`plate`),
+  KEY `owner` (`owner`),
+  CONSTRAINT `vehicles_ibfk_1` FOREIGN KEY (`owner`) REFERENCES `characters` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4;
+

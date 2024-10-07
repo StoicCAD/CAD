@@ -286,40 +286,38 @@
                 <div id="idModal" class="modal">
                     <div class="modal-content">
                         <span class="close">&times;</span>
-                        <img src="https://raw.githubusercontent.com/jonassvensson4/jsfour-idcard/master/html/assets/images/idcard.png" style="width: 100%; height: auto; position: relative;">
+                        <img src="https://raw.githubusercontent.com/jonassvensson4/jsfour-idcard/master/html/assets/images/idcard.png" style="width: 100%; height: auto;">
                         <img id="mugshotImage" src="" alt="Mugshot">
                         <div id="fullName" class="modal-data signature" style="top: <?php echo $fullNameTop; ?>; left: <?php echo $fullNameLeft; ?>;">Full Name:</div>
                         <div id="firstName" class="modal-dataN" style="top: <?php echo $firstNameTop; ?>; left: <?php echo $firstNameLeft; ?>;">First Name:</div>
                         <div id="lastName" class="modal-dataN" style="top: <?php echo $lastNameTop; ?>; left: <?php echo $lastNameLeft; ?>;">Last Name:</div>
                         <div id="dob" class="modal-data" style="top: <?php echo $dobTop; ?>; left: <?php echo $dobLeft; ?>;">DOB:</div>
                         <div id="gender" class="modal-data" style="top: <?php echo $genderTop; ?>; left: <?php echo $genderLeft; ?>;">Gender:</div>
-                        <div id="driverslicense" class="modal-data" style="top: <?php echo $driversLicenseTop; ?>; left: <?php echo $driversLicenseLeft; ?>;">DL Status:</div>            
+                        <div id="driverslicense" class="modal-data" style="top: <?php echo $driversLicenseTop; ?>; left: <?php echo $driversLicenseLeft; ?>;">DL Status:</div>
                     </div>
                 </div>
-                <?php if (!empty($message)): ?>
-                    <div class="mt-4 bg-gray-800 p-4 rounded-lg shadow-lg"><?php echo htmlspecialchars($message); ?></div>
-                <?php endif; ?>
-                <!-- Search Results -->
+
+                <!-- Display Search Results -->
                 <?php if (!empty($results)): ?>
                 <div class="bg-gray-800 mt-4 p-6 rounded-lg shadow-lg space-y-4">
                     <h2 class="text-xl font-semibold">Search Results</h2>
                     <?php foreach ($results as $row): ?>
                         <div class="bg-gray-700 p-4 rounded-lg flex items-center">
-                            <div class="idcard-image" onclick="showModal('<?php echo htmlspecialchars($row['first_name']); ?>', '<?php echo htmlspecialchars($row['last_name']); ?>', '<?php echo htmlspecialchars($row['dob']); ?>', '<?php echo htmlspecialchars($row['gender']); ?>', '<?php echo htmlspecialchars($row['driverslicense']); ?>', '<?php echo htmlspecialchars($row['mugshot']); ?>')">
-                                <img src="https://raw.githubusercontent.com/jonassvensson4/jsfour-idcard/master/html/assets/images/idcard.png" alt="ID Card" style="width: 100px;">
+                            <div class="idcard-image" onclick="showModal('<?php echo htmlspecialchars($row['first_name']); ?>', '<?php echo htmlspecialchars($row['last_name']); ?>', '<?php echo htmlspecialchars($row['dob']); ?>', '<?php echo htmlspecialchars($row['gender']); ?>', '<?php echo htmlspecialchars($row['mugshot'] ?? 'config/NOMUG.png'); ?>', 'valid')">
+                                <i class="fas fa-id-card fa-2x"></i>
                             </div>
                             <div class="ml-4">
                                 <p><strong>Name:</strong> <?php echo htmlspecialchars($row['first_name'] . ' ' . $row['last_name']); ?></p>
                                 <p><strong>Date of Birth:</strong> <?php echo htmlspecialchars($row['dob']); ?></p>
                                 <p><strong>Gender:</strong> <?php echo htmlspecialchars($row['gender']); ?></p>
-                                <p><strong>DL Status:</strong> <?php echo htmlspecialchars($row['driverslicense']); ?></p>
-                            </div>
-                            <div>
-                                <a href="tickets.php" class="px-4 py-2 bg-blue-500 rounded hover:bg-blue-600">Tickets</a>
-                                <a href="add/add_ticket.php?char_id=<?php echo htmlspecialchars($row['id']); ?>" class="px-4 py-2 bg-blue-500 rounded hover:bg-blue-600">Add Ticket</a>
-                                <a href="add/add_arrest.php?char_id=<?php echo htmlspecialchars($row['id']); ?>" class="px-4 py-2 bg-red-500 rounded hover:bg-red-600">Add Arrest</a>
-                                <a href="arrests.php" class="px-4 py-2 bg-red-500 rounded hover:bg-red-600">Arrests</a>
-                            </div>
+                                <div>
+                                <div class="flex space-x-4"> <!-- Add space-x-4 to create horizontal space between the links -->
+    <a href="tickets.php" class="px-6 py-3 bg-blue-500 rounded hover:bg-blue-600">Tickets</a>
+    <a href="add/add_ticket.php?char_id=<?php echo htmlspecialchars($row['id']); ?>" class="px-6 py-3 bg-blue-500 rounded hover:bg-blue-600">Add Ticket</a>
+    <a href="add/add_arrest.php?char_id=<?php echo htmlspecialchars($row['id']); ?>" class="px-6 py-3 bg-red-500 rounded hover:bg-red-600">Add Arrest</a>
+    <a href="arrests.php" class="px-6 py-3 bg-red-500 rounded hover:bg-red-600">Arrests</a>
+</div>
+
                         </div>
                     <?php endforeach; ?>
                 </div>
@@ -334,49 +332,34 @@
             sidebar.classList.toggle("hidden-sidebar");
             mainContent.classList.toggle("full-width");
         }
-        // JavaScript to handle dropdown behavior
-        document.addEventListener('DOMContentLoaded', function () {
-            const dropdown = document.querySelector('.dropdown');
-            const dropdownMenu = document.querySelector('.dropdown-menu');
+        function showModal(firstName, lastName, dob, gender, mugshot, dlstatus) {
+            var modal = document.getElementById('idModal');
+            var closeBtn = document.querySelector('.close');
 
-            dropdown.addEventListener('click', function (event) {
-                event.stopPropagation();
-                dropdownMenu.style.display = dropdownMenu.style.display === 'block' ? 'none' : 'block';
-            });
+            document.getElementById('fullName').textContent = firstName + ' ' + lastName;
+            document.getElementById('firstName').textContent = firstName;
+            document.getElementById('lastName').textContent = lastName;
+            document.getElementById('dob').textContent = dob;
+            document.getElementById('gender').textContent = gender;
+            document.getElementById('driverslicense').textContent = dlstatus;
 
-            window.addEventListener('click', function () {
-                if (dropdownMenu.style.display === 'block') {
-                    dropdownMenu.style.display = 'none';
+            var mugshotImage = document.getElementById('mugshotImage');
+            mugshotImage.src = mugshot ? mugshot : 'path_to_default_image.jpg';
+
+            modal.style.display = 'block';
+
+            closeBtn.onclick = function () {
+                modal.style.display = 'none';
+            };
+
+            window.onclick = function (event) {
+                if (event.target === modal) {
+                    modal.style.display = 'none';
                 }
-            });
-        });
-        // Function to show the modal with user details
-        function showModal(firstname, lastname, dob, gender, driverslicense, mugshot) {
-            var modal = document.getElementById("idModal");
-            modal.style.display = "block";
-            document.getElementById("firstName").innerHTML = firstname;
-            document.getElementById("lastName").innerHTML = lastname;
-            document.getElementById("dob").innerHTML = dob;
-            document.getElementById("gender").innerHTML = gender;
-            document.getElementById("driverslicense").innerHTML = driverslicense;
-            document.getElementById("mugshotImage").src = mugshot;
+            };
         }
 
-        // Get the modal element and close button
-        var modal = document.getElementById("idModal");
-        var closeModal = document.getElementsByClassName("close")[0];
-
-        // Close the modal when the close button is clicked
-        closeModal.onclick = function() {
-            modal.style.display = "none";
-        }
-
-        // Close the modal when clicking outside of the modal content
-        window.onclick = function(event) {
-            if (event.target == modal) {
-                modal.style.display = "none";
-            }
-        }
 
     </script>
 </body>
+</html>

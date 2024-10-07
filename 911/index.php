@@ -1,15 +1,21 @@
 <?php
+// Check if the request is POST
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // Set CORS headers
     header("Access-Control-Allow-Origin: *");
     header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS");
     header("Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With");
 
+    // Include the configuration file
+    require_once '../config/config.php';
+
+    // Session parameters
     $secure = true;
     $httponly = true;
     $samesite = 'none';
     $lifetime = 600;
 
+    // Set session cookie parameters based on PHP version
     if (PHP_VERSION_ID < 70300) {
         session_set_cookie_params($lifetime, '/; samesite=' . $samesite, $_SERVER['HTTP_HOST'], $secure, $httponly);
     } else {
@@ -23,43 +29,33 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         ]);
     }
 
-    $servername = '127.0.0.1:3308';
-    $username = 'discord';
-    $password = "1Lollypop1!";
-    $dbname = "nats";
+    // Get the input data from the form
+    $title = $_POST['title'] ?? '';
+    $description = $_POST['description'] ?? '';
 
-    // Create database connection
-    $conn = new mysqli($servername, $username, $password, $dbname);
+    // Check if the form fields are not empty
+    if (!empty($title) && !empty($description)) {
+        // Prepare an SQL INSERT query using PDO from config.php
+        try {
+            $sql = "INSERT INTO incidents (title, description) VALUES (:title, :description)";
+            $stmt = $conn->prepare($sql);
 
-    // Check connection
-    if ($conn->connect_error) {
-        die("Connection failed: " . $conn->connect_error);
-    }
+            // Bind parameters
+            $stmt->bindParam(':title', $title);
+            $stmt->bindParam(':description', $description);
 
-    // Prepare an INSERT statement
-    $sql = "INSERT INTO incidents (title, description) VALUES (?, ?)";
-    $stmt = $conn->prepare($sql);
-    if ($stmt === false) {
-        die('MySQL prepare error: ' . $conn->error);
-    }
-
-    // Bind parameters
-    $title = $_POST['title'];
-    $description = $_POST['description'];
-
-    $stmt->bind_param("ss", $title, $description);
-
-    // Execute the statement
-    $message = '';
-    if (!$stmt->execute()) {
-        $message = 'Execute error: ' . $stmt->error;
+            // Execute the statement and check for errors
+            if ($stmt->execute()) {
+                $message = "New incident reported successfully";
+            } else {
+                $message = "Error reporting incident";
+            }
+        } catch (PDOException $e) {
+            $message = "Database error: " . $e->getMessage();
+        }
     } else {
-        $message = "New incident reported successfully";
+        $message = "Please fill in all required fields.";
     }
-
-    // Close statement and connection
-    $stmt->close();
-    $conn->close();
 }
 ?>
 <!DOCTYPE html>
