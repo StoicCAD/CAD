@@ -1,57 +1,46 @@
 <?php
-require_once 'config/db.php';
+require_once "config/db.php";
 
-if (!isset($_SESSION['user_id'])) {
+if (!isset($_SESSION["user_id"])) {
     header("Location: login.php");
     exit();
 }
 
-$stmt = $conn->prepare("SELECT * FROM users WHERE id = ?");
-$stmt->execute([$_SESSION['user_id']]);
+$stmt = $conn->prepare(
+    "SELECT username, avatar_url, dept, rank, badge_number, super FROM users WHERE id = ?"
+);
+$stmt->execute([$_SESSION["user_id"]]);
 $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
 if (!$user) {
     echo "User not found.";
-    exit;
+    exit();
 }
 
 // Redirect based on user department
-if ($user['dept'] === 'CIV') {
+if ($user["dept"] === "CIV") {
     header("Location: /civ/");
     exit();
-} elseif ($user['dept'] === 'Dispatch') {
+} elseif ($user["dept"] === "Dispatch") {
     header("Location: dispatch.php");
     exit();
 }
 
-// Fetch latest version information
-$versionUrl = 'https://github.com/StoicCAD/nat/blob/main/version.txt';
-$currentVersion = '1.0.0';
-
-function getLatestVersion($url) {
-    $version = @file_get_contents($url);
-    return $version === FALSE ? false : trim($version);
-}
-
-$latestVersion = getLatestVersion($versionUrl);
-if ($latestVersion === false) {
-    $versionMessage = 'Error fetching version information.';
-} else {
-    $isUpdateAvailable = version_compare($latestVersion, $currentVersion, '>');
-    $versionMessage = $isUpdateAvailable 
-        ? "A new version ($latestVersion) is available. Please <a href=\"https://github.com/yourusername/yourrepo/releases\" class=\"text-blue-700 underline\" target=\"_blank\">update now</a>!"
-        : "Your version ($currentVersion) is up-to-date.";
-}
-
 // Check if the user is an admin
-$isAdmin = $user['rank'] == 'Admin';
+$isAdmin = $user["rank"] == "Admin";
 
 // Update incident status if requested
-if (isset($_POST['update_incident_status'], $_POST['incident_id'], $_POST['status'])) {
-    $allowedStatuses = ['Open', 'Closed', 'On Scene', 'Enroute'];
-    $status = $_POST['status'];
-    $incident_id = (int)$_POST['incident_id'];
-    
+if (
+    isset(
+        $_POST["update_incident_status"],
+        $_POST["incident_id"],
+        $_POST["status"]
+    )
+) {
+    $allowedStatuses = ["Open", "Closed", "On Scene", "Enroute"];
+    $status = $_POST["status"];
+    $incident_id = (int) $_POST["incident_id"];
+
     if (in_array($status, $allowedStatuses)) {
         $stmt = $conn->prepare("UPDATE incidents SET status = ? WHERE id = ?");
         $stmt->execute([$status, $incident_id]);
@@ -61,49 +50,54 @@ if (isset($_POST['update_incident_status'], $_POST['incident_id'], $_POST['statu
 }
 
 // Remove incident if requested
-if (isset($_POST['remove_incident'], $_POST['remove_incident_id'])) {
-    $remove_incident_id = (int)$_POST['remove_incident_id'];
+if (isset($_POST["remove_incident"], $_POST["remove_incident_id"])) {
+    $remove_incident_id = (int) $_POST["remove_incident_id"];
     $stmt = $conn->prepare("DELETE FROM incidents WHERE id = ?");
     $stmt->execute([$remove_incident_id]);
 }
 
 // Fetch all incidents and reports
-$incidents_stmt = $conn->prepare("SELECT * FROM incidents ORDER BY created_at DESC");
+$incidents_stmt = $conn->prepare(
+    "SELECT * FROM incidents ORDER BY created_at DESC"
+);
 $incidents_stmt->execute();
 $incidents = $incidents_stmt->fetchAll(PDO::FETCH_ASSOC);
 
-$reports_stmt = $conn->prepare("SELECT * FROM reports ORDER BY report_date DESC");
+$reports_stmt = $conn->prepare(
+    "SELECT * FROM reports ORDER BY report_date DESC"
+);
 $reports_stmt->execute();
 $reports = $reports_stmt->fetchAll(PDO::FETCH_ASSOC);
 
 // Handle search query
-if (isset($_GET['query']) && !empty($_GET['query'])) {
-    $query = trim($_GET['query']);
-    $stmt = $conn->prepare("SELECT * FROM users WHERE username LIKE ? OR dept LIKE ? OR badge_number LIKE ?");
+if (isset($_GET["query"]) && !empty($_GET["query"])) {
+    $query = trim($_GET["query"]);
+    $stmt = $conn->prepare(
+        "SELECT * FROM users WHERE username LIKE ? OR dept LIKE ? OR badge_number LIKE ?"
+    );
     $searchTerm = "%$query%";
     $stmt->execute([$searchTerm, $searchTerm, $searchTerm]);
     $searchResults = $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
 
 // Logout functionality
-if (isset($_POST['logout'])) {
+if (isset($_POST["logout"])) {
     session_destroy();
     header("Location: login.php");
     exit();
 }
 
-// URL for the live map iframe
-$iframeUrl = 'https://thestoicbear-3kgkoo.users.cfx.re/webmap/'; // Update with your live map URL
-
 // Search functionality for characters
-$search_query = '';
+$search_query = "";
 $results = [];
 
 // Test with just one condition
-$search_stmt = $conn->prepare("SELECT * FROM characters WHERE first_name LIKE :query");
+$search_stmt = $conn->prepare(
+    "SELECT * FROM characters WHERE first_name LIKE :query"
+);
 
-if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['search_query'])) {
-    $search_query = trim($_POST['search_query']);
+if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["search_query"])) {
+    $search_query = trim($_POST["search_query"]);
 
     // Prepare the search statement with separate placeholders
     $search_stmt = $conn->prepare("
@@ -120,10 +114,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['search_query'])) {
     // Execute the search with separate parameters
     try {
         $search_stmt->execute([
-            ':first_name' => $searchTerm,
-            ':last_name' => $searchTerm,
-            ':dob' => $searchTerm,
-            ':gender' => $searchTerm
+            ":first_name" => $searchTerm,
+            ":last_name" => $searchTerm,
+            ":dob" => $searchTerm,
+            ":gender" => $searchTerm,
         ]);
     } catch (PDOException $e) {
         echo "SQL Error: " . htmlspecialchars($e->getMessage());
@@ -138,41 +132,44 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['search_query'])) {
     }
 
     foreach ($results as $key => $character) {
-        $char_id = $character['id'];
+        $char_id = $character["id"];
 
         // Fetch arrest records
-        $arrest_stmt = $conn->prepare("SELECT * FROM arrests WHERE character_id = ?");
+        $arrest_stmt = $conn->prepare(
+            "SELECT * FROM arrests WHERE character_id = ?"
+        );
         $arrest_stmt->execute([$char_id]);
-        $results[$key]['arrests'] = $arrest_stmt->fetchAll(PDO::FETCH_ASSOC);
+        $results[$key]["arrests"] = $arrest_stmt->fetchAll(PDO::FETCH_ASSOC);
 
         // Fetch ticket records
-        $ticket_stmt = $conn->prepare("SELECT * FROM tickets WHERE character_id = ?");
+        $ticket_stmt = $conn->prepare(
+            "SELECT * FROM tickets WHERE character_id = ?"
+        );
         $ticket_stmt->execute([$char_id]);
-        $results[$key]['tickets'] = $ticket_stmt->fetchAll(PDO::FETCH_ASSOC);
+        $results[$key]["tickets"] = $ticket_stmt->fetchAll(PDO::FETCH_ASSOC);
 
         // Fetch report records
-        $report_stmt = $conn->prepare("SELECT * FROM reports WHERE character_id = ?");
+        $report_stmt = $conn->prepare(
+            "SELECT * FROM reports WHERE character_id = ?"
+        );
         $report_stmt->execute([$char_id]);
-        $results[$key]['reports'] = $report_stmt->fetchAll(PDO::FETCH_ASSOC);
+        $results[$key]["reports"] = $report_stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 }
 
-
-
-
 // Default positions for the full name (if needed later in your HTML)
-$fullNameTop = '180px';  // Change this in PHP as needed
-$fullNameLeft = '45%';  // Change this in PHP as needed
-$firstNameTop = '70px';
-$firstNameLeft = '-10%';
-$lastNameTop = '70px';
-$lastNameLeft = '10%';
-$dobTop = '127px';
-$dobLeft = '-10%';
-$genderTop = '127px';
-$genderLeft = '5%';
-$driversLicenseTop = '180px';
-$driversLicenseLeft = '30%';
+$fullNameTop = "180px"; // Change this in PHP as needed
+$fullNameLeft = "45%"; // Change this in PHP as needed
+$firstNameTop = "70px";
+$firstNameLeft = "-10%";
+$lastNameTop = "70px";
+$lastNameLeft = "10%";
+$dobTop = "127px";
+$dobLeft = "-10%";
+$genderTop = "127px";
+$genderLeft = "5%";
+$driversLicenseTop = "180px";
+$driversLicenseLeft = "30%";
 ?>
 
 <!DOCTYPE html>
@@ -184,225 +181,7 @@ $driversLicenseLeft = '30%';
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css">
     <link rel="stylesheet" href="scrollkit.css">
-    <style>
-        body {
-            background-color: #0d121c; /* Set the background color */
-            background-size: cover;
-            background-position: center;
-            background-repeat: no-repeat;
-            background-attachment: fixed;
-        }
-        .dropdown-menu {
-            display: none;
-            position: absolute;
-            left: 0;
-            z-index: 1000;
-            width: 100%;
-            background: #4b5563; /* Matching Tailwind's gray-700 */
-            border-radius: 0 0 0.5rem 0.5rem;
-        }
-        .sidebar {
-            transition: transform 1.3s ease-out;
-            transform: translateX(0);
-            z-index: 10;
-        }
-        .hidden-sidebar {
-            transform: translateX(-100%);
-        }
-        .sidebar-button {
-            position: fixed;
-            top: 10px;
-            left: 10px;
-            z-index: 20;
-        }
-        .content {
-            transition: margin-left 1.4s ease-out;
-            margin-right: 120px; /* match sidebar width when visible */
-        }
-        .full-width {
-            margin-left: 0; /* full width when sidebar is hidden */
-        }
-        /* Custom scrollbar styles for sidebar */
-        .sidebar::-webkit-scrollbar {
-            width: 8px; /* Width of the scrollbar */
-        }
-
-        .sidebar::-webkit-scrollbar-thumb {
-            background-color: #4b5563; /* Thumb color */
-            border-radius: 10px;
-        }
-
-        .sidebar::-webkit-scrollbar-track {
-            background-color: #1f2937; /* Track color */
-        }
-
-        /* Custom scrollbar styles for content */
-        .content {
-            overflow-y: auto; /* Ensure vertical scroll */
-        }
-
-        .content::-webkit-scrollbar {
-            width: 8px; /* Width of the scrollbar */
-        }
-
-        .content::-webkit-scrollbar-thumb {
-            background-color: #4b5563; /* Thumb color */
-            border-radius: 10px;
-        }
-
-        .content::-webkit-scrollbar-track {
-            background-color: #1f2937; /* Track color */
-        }
-
-        /* Firefox */
-        .sidebar, .content {
-            scrollbar-width: thin; /* Scrollbar width */
-            scrollbar-color: #4b5563 #1f2937; /* Thumb and track colors */
-        }
-        /* Custom scrollbar styles for the entire body */
-        body::-webkit-scrollbar {
-            width: 8px; /* Width of the scrollbar */
-        }
-
-        body::-webkit-scrollbar-thumb {
-            background-color: #4b5563; /* Thumb color */
-            border-radius: 10px;
-        }
-
-        body::-webkit-scrollbar-track {
-            background-color: #1f2937; /* Track color */
-        }
-
-        .map-container {
-            width: 100%;
-            height: 500px; /* Adjust height as needed */
-            border: none; /* Remove border */
-        }
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1001;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            overflow: auto;
-        }
-        .modal-content {
-            position: relative;
-            background-color: #fefefe00;
-            margin: 15% auto;
-            padding: 20px;
-            width: 80%;
-            max-width: 500px;
-            height: 250px; /* Adjust based on your background image size */
-        }
-        .close {
-            color: #aaa;
-            position: absolute;
-            top: 10px;
-            right: 25px;
-            font-size: 28px;
-            font-weight: bold;
-        }
-        .close:hover,
-        .close:focus {
-            color: black;
-            text-decoration: none;
-            cursor: pointer;
-        }
-        .idcard-image {
-            cursor: pointer;
-            transition: transform 0.2s;
-        }
-        .idcard-image:hover {
-            transform: scale(1.05);
-        }
-        .content-container {
-            padding-top: 100px; /* Added top padding to move content down */
-        }
-        .modal-data {
-            position: absolute;
-            width: 100%;
-            text-align: center;
-            font-size: 14px; /* Adjusted font size for better fit */
-            font-weight: bold;
-            color: #fff; /* Black color for visibility on a light background */
-        }
-        .modal-dataN {
-            position: absolute;
-            width: 100%;
-            text-align: center;
-            font-size: 22px; /* Adjusted font size for better fit */
-            font-weight: bold;
-            color: #fff; /* Black color for visibility on a light background */
-        }
-        #mugshotImage {
-            position: absolute;
-            top: 55px;      /* Adjusted for vertical alignment */
-            left: 40px;     /* Closer to the left edge of the modal */
-            width: 100px;   /* Size as per your specification */
-            height: 100px;  /* Size as per your specification */
-            border-radius: 50%;
-            transform: translate(0, 0); /* Removed the centering transform if not needed */
-        }
-        .signature {
-            font-family: 'Great Vibes', cursive;
-            font-size: 24px;
-            color: #fff; /* Adjust as needed */
-            position: absolute;
-            left: 50%; /* Center horizontally */
-            top: 150px; /* Position where it fits on your background */
-            transform: translateX(-50%); /* Center align */
-        }
-        /* Close button */
-        /* Basic styles for the collapsible sections */
-        .collapsible {
-            cursor: pointer;
-            padding: 10px;
-            border: 1px solid #1F2937;
-            border-radius: 5px;
-            background-color: #1F2937;
-            color: #fff;
-            font-size: 18px;
-            margin-bottom: 10px;
-            transition: background-color 0.3s;
-        }
-        .collapsible:hover {
-            background-color: #2563EB;
-        }
-        .collapsible-content {
-            display: none;
-            padding: 10px;
-            border: 1px solid #1F2937;
-            border-radius: 5px;
-            background-color: #1F2937;
-        }
-        .collapsible-content iframe {
-            width: 100%;
-            height: 400px;
-            border: none;
-        }
-        .collapsible-content form {
-            margin-top: 10px;
-        }
-        .collapsible-content form button {
-            margin-top: 10px;
-        }
-        .close {
-        color: #aaa;
-        float: right;
-        font-size: 28px;
-        font-weight: bold;
-        }
-
-        .close:hover,
-        .close:focus {
-        color: black;
-        text-decoration: none;
-        cursor: pointer;
-        }
-</style>
+    <link rel="stylesheet" href="dispatch.css">
 
 </head>
 <body class="font-sans antialiased text-white">
@@ -414,13 +193,25 @@ $driversLicenseLeft = '30%';
         <div id="sidebar" class="bg-gray-800 w-64 space-y-6 py-7 px-2 fixed inset-y-0 left-0 overflow-y-auto sidebar">
             <div class="text-center">
                 <!-- Ensure values are not null before using htmlspecialchars -->
-                <img src="<?php echo htmlspecialchars($user['avatar_url'] ?? 'default_avatar.png'); ?>" alt="User Avatar" class="h-20 w-20 rounded-full mx-auto">
-                <h2 class="mt-4 mb-2 font-semibold"><?php echo htmlspecialchars($user['username'] ?? 'Unknown User'); ?></h2>
+                <img src="<?php echo htmlspecialchars(
+                    $user["avatar_url"] ?? "default_avatar.png"
+                ); ?>" alt="User Avatar" class="h-20 w-20 rounded-full mx-auto">
+                <h2 class="mt-4 mb-2 font-semibold"><?php echo htmlspecialchars(
+                    $user["username"] ?? "Unknown User"
+                ); ?></h2>
                 <p>
-                    <?php echo htmlspecialchars($user['dept'] ?? 'No Department'); ?>, 
-                    <?php echo htmlspecialchars($user['user_id'] ?? 'No Department'); ?>, 
-                    <?php echo htmlspecialchars($user['rank'] ?? 'No Rank'); ?><br>
-                    Badge #<?php echo htmlspecialchars($user['badge_number'] ?? 'No Badge'); ?>
+                    <?php echo htmlspecialchars(
+                        $user["dept"] ?? "No Department"
+                    ); ?>, 
+                    <?php echo htmlspecialchars(
+                        $user["user_id"] ?? "No Department"
+                    ); ?>, 
+                    <?php echo htmlspecialchars(
+                        $user["rank"] ?? "No Rank"
+                    ); ?><br>
+                    Badge #<?php echo htmlspecialchars(
+                        $user["badge_number"] ?? "No Badge"
+                    ); ?>
                 </p>
             </div>
 
@@ -434,7 +225,7 @@ $driversLicenseLeft = '30%';
                 <a href="incidents.php" class="block py-2.5 px-4 rounded hover:bg-blue-600"><i class="fas fa-exclamation-triangle mr-2"></i>Active Calls</a>
                 <a href="reports.php" class="block py-2.5 px-4 rounded hover:bg-blue-600"><i class="fas fa-file-alt mr-2"></i>Reports</a>
                 <?php if ($isAdmin): ?>
-                    <a href="admin-dash.php" class="block py-2.5 px-4 rounded hover:bg-blue-600"><i class="fas fa-cogs mr-2"></i>Admin Panel</a>
+                    <a href="admin.php" class="block py-2.5 px-4 rounded hover:bg-blue-600"><i class="fas fa-cogs mr-2"></i>Admin Panel</a>
                 <?php endif; ?>
             </nav>
 
@@ -450,13 +241,19 @@ $driversLicenseLeft = '30%';
             <header class="mb-10">
                 <!-- Dispatch Search Database Section -->
 <div class="collapsible" onclick="toggleCollapse('searchDatabaseContent')">Dispatch Search Database</div>
-<div id="searchDatabaseContent" class="collapsible-content <?php echo !empty($results) || !empty($search_query) ? 'expanded' : ''; ?>">
+<div id="searchDatabaseContent" class="collapsible-content <?php echo !empty(
+    $results
+) || !empty($search_query)
+    ? "expanded"
+    : ""; ?>">
     <?php if ($isAdmin): ?>
         <div class="bg-gray-800 p-6 rounded-lg shadow-lg">
             <form method="post" class="space-y-4">
                 <div>
                     <label for="search_query" class="block">Search for an individual:</label>
-                    <input type="text" id="search_query" name="search_query" value="<?php echo htmlspecialchars($search_query); ?>" required class="w-full h-10 px-3 rounded bg-gray-700 focus:bg-gray-600 outline-none">
+                    <input type="text" id="search_query" name="search_query" value="<?php echo htmlspecialchars(
+                        $search_query
+                    ); ?>" required class="w-full h-10 px-3 rounded bg-gray-700 focus:bg-gray-600 outline-none">
                 </div>
                 <button type="submit" class="px-4 py-2 bg-blue-500 rounded hover:bg-blue-600 focus:outline-none">Search</button>
             </form>
@@ -475,7 +272,9 @@ $driversLicenseLeft = '30%';
             </div>
         </div>
         <?php if (!empty($message)): ?>
-            <div class="mt-4 bg-gray-800 p-4 rounded-lg shadow-lg"><?php echo htmlspecialchars($message); ?></div>
+            <div class="mt-4 bg-gray-800 p-4 rounded-lg shadow-lg"><?php echo htmlspecialchars(
+                $message
+            ); ?></div>
         <?php endif; ?>
         <!-- Search Results -->
         <?php if (!empty($results)): ?>
@@ -483,19 +282,41 @@ $driversLicenseLeft = '30%';
                 <h2 class="text-xl font-semibold">Search Results</h2>
                 <?php foreach ($results as $row): ?>
                     <div class="bg-gray-700 p-4 rounded-lg flex items-center">
-                        <div class="idcard-image" onclick="showModal('<?php echo htmlspecialchars($row['first_name']); ?>', '<?php echo htmlspecialchars($row['last_name']); ?>', '<?php echo htmlspecialchars($row['dob']); ?>', '<?php echo htmlspecialchars($row['gender']); ?>', '<?php echo htmlspecialchars($row['driverslicense']); ?>', '<?php echo htmlspecialchars($row['mugshot']); ?>')">
+                        <div class="idcard-image" onclick="showModal('<?php echo htmlspecialchars(
+                            $row["first_name"]
+                        ); ?>', '<?php echo htmlspecialchars(
+    $row["last_name"]
+); ?>', '<?php echo htmlspecialchars(
+    $row["dob"]
+); ?>', '<?php echo htmlspecialchars(
+    $row["gender"]
+); ?>', '<?php echo htmlspecialchars(
+    $row["driverslicense"]
+); ?>', '<?php echo htmlspecialchars($row["mugshot"]); ?>')">
                             <img src="https://raw.githubusercontent.com/jonassvensson4/jsfour-idcard/master/html/assets/images/idcard.png" alt="ID Card" style="width: 100px;">
                         </div>
                         <div class="ml-4">
-                            <p><strong>Name:</strong> <?php echo htmlspecialchars($row['first_name'] . ' ' . $row['last_name']); ?></p>
-                            <p><strong>Date of Birth:</strong> <?php echo htmlspecialchars($row['dob']); ?></p>
-                            <p><strong>Gender:</strong> <?php echo htmlspecialchars($row['gender']); ?></p>
-                            <p><strong>DL Status:</strong> <?php echo htmlspecialchars($row['driverslicense']); ?></p>
+                            <p><strong>Name:</strong> <?php echo htmlspecialchars(
+                                $row["first_name"] . " " . $row["last_name"]
+                            ); ?></p>
+                            <p><strong>Date of Birth:</strong> <?php echo htmlspecialchars(
+                                $row["dob"]
+                            ); ?></p>
+                            <p><strong>Gender:</strong> <?php echo htmlspecialchars(
+                                $row["gender"]
+                            ); ?></p>
+                            <p><strong>DL Status:</strong> <?php echo htmlspecialchars(
+                                $row["driverslicense"]
+                            ); ?></p>
                         </div>
                         <div>
                             <a href="tickets.php" class="px-4 py-2 bg-blue-500 rounded hover:bg-blue-600">Tickets</a>
-                            <a href="add/add_ticket.php?char_id=<?php echo htmlspecialchars($row['id']); ?>" class="px-4 py-2 bg-blue-500 rounded hover:bg-blue-600">Add Ticket</a>
-                            <a href="add/add_arrest.php?char_id=<?php echo htmlspecialchars($row['id']); ?>" class="px-4 py-2 bg-red-500 rounded hover:bg-red-600">Arrests</a>
+                            <a href="add/add_ticket.php?char_id=<?php echo htmlspecialchars(
+                                $row["id"]
+                            ); ?>" class="px-4 py-2 bg-blue-500 rounded hover:bg-blue-600">Add Ticket</a>
+                            <a href="add/add_arrest.php?char_id=<?php echo htmlspecialchars(
+                                $row["id"]
+                            ); ?>" class="px-4 py-2 bg-red-500 rounded hover:bg-red-600">Arrests</a>
                         </div>
                     </div>
                 <?php endforeach; ?>
@@ -509,7 +330,9 @@ $driversLicenseLeft = '30%';
                 <div class="collapsible" onclick="toggleCollapse('liveMapContent')">Live Map</div>
                 <div id="liveMapContent" class="collapsible-content">
                     <div class="bg-gray-800 p-4 rounded-lg shadow-lg">
-                        <iframe src="<?php echo htmlspecialchars($iframeUrl); ?>" class="map-container"></iframe>
+                        <iframe src="<?php echo htmlspecialchars(
+                            $iframeUrl
+                        ); ?>" class="map-container"></iframe>
                     </div>
                 </div>
 
@@ -519,25 +342,51 @@ $driversLicenseLeft = '30%';
                     <?php if (count($incidents) > 0): ?>
                         <?php foreach ($incidents as $incident): ?>
                             <div class="bg-gray-800 p-4 rounded mb-4">
-                                <h3 class="text-lg font-semibold"><?php echo htmlspecialchars($incident['title']); ?></h3>
-                                <p>Status: <?php echo htmlspecialchars($incident['status']); ?></p>
-                                <p>Created At: <?php echo htmlspecialchars($incident['created_at']); ?></p>
+                                <h3 class="text-lg font-semibold"><?php echo htmlspecialchars(
+                                    $incident["title"]
+                                ); ?></h3>
+                                <p>Status: <?php echo htmlspecialchars(
+                                    $incident["status"]
+                                ); ?></p>
+                                <p>Created At: <?php echo htmlspecialchars(
+                                    $incident["created_at"]
+                                ); ?></p>
                                 
                                 <!-- Update Incident Status Form -->
                                 <form method="post" class="mt-2">
-                                    <input type="hidden" name="incident_id" value="<?php echo htmlspecialchars($incident['id']); ?>" />
+                                    <input type="hidden" name="incident_id" value="<?php echo htmlspecialchars(
+                                        $incident["id"]
+                                    ); ?>" />
                                     <select name="status" class="bg-gray-700 text-white p-2 rounded">
-                                        <option value="Open" <?php echo $incident['status'] === 'Open' ? 'selected' : ''; ?>>Open</option>
-                                        <option value="Closed" <?php echo $incident['status'] === 'Closed' ? 'selected' : ''; ?>>Closed</option>
-                                        <option value="On Scene" <?php echo $incident['status'] === 'On Scene' ? 'selected' : ''; ?>>On Scene</option>
-                                        <option value="Enroute" <?php echo $incident['status'] === 'Enroute' ? 'selected' : ''; ?>>Enroute</option>
+                                        <option value="Open" <?php echo $incident[
+                                            "status"
+                                        ] === "Open"
+                                            ? "selected"
+                                            : ""; ?>>Open</option>
+                                        <option value="Closed" <?php echo $incident[
+                                            "status"
+                                        ] === "Closed"
+                                            ? "selected"
+                                            : ""; ?>>Closed</option>
+                                        <option value="On Scene" <?php echo $incident[
+                                            "status"
+                                        ] === "On Scene"
+                                            ? "selected"
+                                            : ""; ?>>On Scene</option>
+                                        <option value="Enroute" <?php echo $incident[
+                                            "status"
+                                        ] === "Enroute"
+                                            ? "selected"
+                                            : ""; ?>>Enroute</option>
                                     </select>
                                     <button type="submit" name="update_incident_status" class="mt-2 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-700">Update Status</button>
                                 </form>
                                 
                                 <!-- Remove Incident Form -->
                                 <form method="post" class="mt-2">
-                                    <input type="hidden" name="remove_incident_id" value="<?php echo htmlspecialchars($incident['id']); ?>" />
+                                    <input type="hidden" name="remove_incident_id" value="<?php echo htmlspecialchars(
+                                        $incident["id"]
+                                    ); ?>" />
                                     <button type="submit" name="remove_incident" class="mt-2 px-4 py-2 bg-red-500 text-white rounded hover:bg-red-700">Remove Incident</button>
                                 </form>
                             </div>
@@ -554,16 +403,36 @@ $driversLicenseLeft = '30%';
                     <?php if (count($reports) > 0): ?>
                         <?php foreach ($reports as $report): ?>
                             <div class="bg-gray-800 p-4 rounded mb-4">
-                                <h3 class="text-lg font-semibold"><?php echo htmlspecialchars($report['report_title']); ?></h3>
-                                <p>Status: <?php echo htmlspecialchars($report['status']); ?></p>
-                                <p>Date: <?php echo htmlspecialchars($report['report_date']); ?></p>
+                                <h3 class="text-lg font-semibold"><?php echo htmlspecialchars(
+                                    $report["report_title"]
+                                ); ?></h3>
+                                <p>Status: <?php echo htmlspecialchars(
+                                    $report["status"]
+                                ); ?></p>
+                                <p>Date: <?php echo htmlspecialchars(
+                                    $report["report_date"]
+                                ); ?></p>
                                 <!-- Update Report Status Form -->
                                 <form method="post" class="mt-2">
-                                    <input type="hidden" name="report_id" value="<?php echo htmlspecialchars($report['report_id']); ?>" />
+                                    <input type="hidden" name="report_id" value="<?php echo htmlspecialchars(
+                                        $report["report_id"]
+                                    ); ?>" />
                                     <select name="status" class="bg-gray-700 text-white p-2 rounded">
-                                        <option value="Pending" <?php echo $report['status'] === 'Pending' ? 'selected' : ''; ?>>Pending</option>
-                                        <option value="Reviewed" <?php echo $report['status'] === 'Reviewed' ? 'selected' : ''; ?>>Reviewed</option>
-                                        <option value="Closed" <?php echo $report['status'] === 'Closed' ? 'selected' : ''; ?>>Closed</option>
+                                        <option value="Pending" <?php echo $report[
+                                            "status"
+                                        ] === "Pending"
+                                            ? "selected"
+                                            : ""; ?>>Pending</option>
+                                        <option value="Reviewed" <?php echo $report[
+                                            "status"
+                                        ] === "Reviewed"
+                                            ? "selected"
+                                            : ""; ?>>Reviewed</option>
+                                        <option value="Closed" <?php echo $report[
+                                            "status"
+                                        ] === "Closed"
+                                            ? "selected"
+                                            : ""; ?>>Closed</option>
                                     </select>
                                     <button type="submit" name="update_report_status" class="mt-2 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-700">Update Status</button>
                                 </form>
