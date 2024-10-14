@@ -179,6 +179,22 @@ if (empty($reports)) {
             document.querySelector('.sidebar').classList.toggle('hidden-sidebar');
             document.getElementById('mainContent').classList.toggle('full-width');
         }
+                // JavaScript to handle dropdown behavior
+                document.addEventListener('DOMContentLoaded', function () {
+            const dropdown = document.querySelector('.dropdown');
+            const dropdownMenu = document.querySelector('.dropdown-menu');
+
+            dropdown.addEventListener('click', function (event) {
+                event.stopPropagation();
+                dropdownMenu.style.display = dropdownMenu.style.display === 'block' ? 'none' : 'block';
+            });
+
+            window.addEventListener('click', function () {
+                if (dropdownMenu.style.display === 'block') {
+                    dropdownMenu.style.display = 'none';
+                }
+            });
+        });
     </script>
 </body>
 </html>
