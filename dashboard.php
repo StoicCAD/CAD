@@ -27,10 +27,16 @@ if ($user['dept'] === 'CIV') {
     exit();
 }
 
+// Define status constants
+const STATUS_OPEN = 'Open';
+const STATUS_CLOSED = 'Closed';
+const STATUS_ON_SCENE = 'On Scene';
+const STATUS_ENROUTE = 'Enroute';
 
+$allowedStatuses = [STATUS_OPEN, STATUS_CLOSED, STATUS_ON_SCENE, STATUS_ENROUTE];
 
 $versionUrl = 'https://raw.githubusercontent.com/StoicCAD/CAD/standalone/version.txt'; // Use the raw content URL
-$currentVersion = '1.2.0';
+$currentVersion = '1.2.5';
 
 function getLatestVersion($url) {
     $version = @file_get_contents($url);
@@ -50,18 +56,18 @@ if ($latestVersion === false) {
         : "Your version ($currentVersion) is up-to-date.";
 }
 
-
 $isAdmin = $user['rank'] == 'Admin';
 
 // Update incident status
 if (isset($_POST['update_incident_status'], $_POST['incident_id'], $_POST['status'])) {
-    $allowedStatuses = ['Open', 'Closed', 'On Scene', 'Enroute'];
     $status = $_POST['status'];
     $incident_id = (int)$_POST['incident_id'];
     
     if (in_array($status, $allowedStatuses)) {
         $stmt = $conn->prepare("UPDATE incidents SET status = ? WHERE id = ?");
-        $stmt->execute([$status, $incident_id]);
+        if (!$stmt->execute([$status, $incident_id])) {
+            echo "Failed to update incident status.";
+        }
     } else {
         echo "Invalid status update attempted.";
     }
@@ -73,8 +79,14 @@ if (isset($_POST['update_report_status'])) {
     $stmt->execute([$_POST['status'], $_POST['report_id']]);
 }
 
-// Fetch incidents
-$incidents_stmt = $conn->prepare("SELECT * FROM incidents ORDER BY created_at DESC");
+// Fetch incidents with attached users
+$incidents_stmt = $conn->prepare("
+    SELECT incidents.*, GROUP_CONCAT(users.username) AS attached_usernames 
+    FROM incidents 
+    LEFT JOIN users ON FIND_IN_SET(users.id, incidents.attached_users) 
+    GROUP BY incidents.id 
+    ORDER BY incidents.created_at DESC
+");
 $incidents_stmt->execute();
 $incidents = $incidents_stmt->fetchAll(PDO::FETCH_ASSOC);
 
@@ -94,8 +106,40 @@ if (isset($_POST['logout'])) {
     header("Location: login.php");
     exit();
 }
-?>
+// Attach user to incident
+if (isset($_POST['attach_self'], $_POST['incident_id'])) {
+    $incident_id = (int)$_POST['incident_id'];
 
+    // Fetch the current attached users
+    $stmt = $conn->prepare("SELECT attached_users FROM incidents WHERE id = ?");
+    $stmt->execute([$incident_id]);
+    $currentAttached = $stmt->fetchColumn();
+
+    // If no users attached, start with an empty string
+    $currentAttached = $currentAttached ? $currentAttached . ',' : '';
+
+    // Append the current user ID
+    $currentAttached .= $user_id;
+
+    // Update the incident with the new list of attached users
+    $stmt = $conn->prepare("UPDATE incidents SET attached_users = ? WHERE id = ?");
+    if (!$stmt->execute([$currentAttached, $incident_id])) {
+        echo "Failed to attach user.";
+    }
+}
+
+// Fetch incidents with attached users
+$incidents_stmt = $conn->prepare("
+    SELECT incidents.*, GROUP_CONCAT(users.username) AS attached_usernames 
+    FROM incidents 
+    LEFT JOIN users ON FIND_IN_SET(users.id, incidents.attached_users) 
+    GROUP BY incidents.id 
+    ORDER BY incidents.created_at DESC
+");
+$incidents_stmt->execute();
+$incidents = $incidents_stmt->fetchAll(PDO::FETCH_ASSOC);
+
+?>
 
 <!DOCTYPE html>
 <html lang="en">
@@ -144,173 +188,88 @@ if (isset($_POST['logout'])) {
             scrollbar-width: thin; /* Scrollbar width */
             scrollbar-color: #4b5563 #1f2937; /* Thumb and track colors */
         }
-
     </style>
 </head>
 <body class="font-sans antialiased text-white">
-                <div class="flex min-h-screen">
-                    <!-- Toggle Button -->
-                    <button onclick="toggleSidebar()" class="sidebar-button text-white text-xl bg-gray-800 px-4 py-2 rounded">&#9776;</button>
-                    
-                    <!-- Sidebar -->
-                    <?php include 'sidebar.php'; ?>
+    <div class="flex min-h-screen">
+        <!-- Toggle Button -->
+        <button onclick="toggleSidebar()" class="sidebar-button text-white text-xl bg-gray-800 px-4 py-2 rounded">&#9776;</button>
+        
+        <!-- Sidebar -->
+        <?php include 'sidebar.php'; ?>
 
-                    <!-- Main Content -->
-                    <div id="mainContent" class="flex-1 flex flex-col ml-64 p-10">
-                            <h1 class="font-bold text-3xl mb-2">Dashboard</h1>
+        <!-- Main Content -->
+        <div id="mainContent" class="flex-1 flex flex-col ml-64 p-10">
+            <h1 class="font-bold text-3xl mb-2">Dashboard</h1>
 
-                                    <!-- Display version update message -->
-                                    <?php if ($isAdmin): ?>
-                                        <div class="mb-5 bg-gray-900 p-4 rounded-lg shadow-md">
-                                            <div class="<?= $latestVersion === false ? 'bg-red-500' : ($isUpdateAvailable ? 'bg-yellow-500' : 'bg-green-500'); ?> p-4 rounded-lg text-center">
-                                                <p class="text-black font-semibold"><?= $versionMessage; ?></p>
-                                            </div>
-                                        </div>
-                                    <?php endif; ?>
-
-                            <!-- Add the content element here -->
-                            <div id="content">
-                        <div class="bg-gray-900 p-6 rounded-lg shadow-md">
-                            <h2 class="text-xl mb-2">Active Calls</h2>
-                            <div id="activeCalls">
-                              <?php foreach($incidents as $incident) : ?>
-                                <div class="bg-gray-800 p-4 rounded mb-2">
-                                    <p><strong><?php echo $incident['title'] ?></strong>: <?php echo $incident['description'] ?> - <em>Status: <?php echo $incident['status'] ?></em></p>
-                                    <form method="post">
-                                        <input type="hidden" name="incident_id" value="<?php echo $incident['id'] ?>">
-                                        <select name="status" class="bg-gray-700 text-white p-2 rounded">
-                                            <option value="Open" <?php echo $incident['status'] === "Open" ? "selected" : "" ?>>Open</option>
-                                            <option value="Closed" <?php echo $incident['status'] === "Closed" ? "selected" : "" ?>>Closed</option>
-                                            <option value="On Scene" <?php echo $incident['status'] === "On Scene" ? "selected" : "" ?>>On Scene</option>
-                                            <option value="Enroute" <?php echo $incident['status'] === "Enroute" ? "selected" : "" ?>>Enroute</option>
-                                        </select>
-                                        <button type="submit" name="update_incident_status" class="ml-2 px-3 py-1 bg-blue-500 rounded hover:bg-blue-700">Update Status</button>
-                                    </form>
-                                </div>
-                              <?php endforeach; ?>
-                            </div> <!-- Placeholder for incidents -->
-                        </div>
-
-                        <div class="bg-gray-900 mt-5 p-5 rounded-lg shadow-lg">
-                            <h2 class="text-xl mb-2">Reports</h2>
-                            <div id="reportsList"></div> <!-- Placeholder for reports -->
-                        </div>
+            <!-- Display version update message -->
+            <?php if ($isAdmin): ?>
+                <div class="mb-5 bg-gray-900 p-4 rounded-lg shadow-md">
+                    <div class="<?= $latestVersion === false ? 'bg-red-500' : ($isUpdateAvailable ? 'bg-yellow-500' : 'bg-green-500'); ?> p-4 rounded-lg text-center">
+                        <p class="text-black font-semibold"><?= $versionMessage; ?></p>
                     </div>
+                </div>
+            <?php endif; ?>
+<!-- Display incidents -->
+<div id="content">
+    <div class="bg-gray-900 p-6 rounded-lg shadow-md">
+        <h2 class="text-xl mb-2">Active Calls</h2>
+        <div id="activeCalls">
+            <?php foreach ($incidents as $incident): ?>
+                <div class="bg-gray-800 p-4 rounded mb-2">
+                    <p><strong><?php echo htmlspecialchars($incident['title']); ?></strong>: <?php echo htmlspecialchars($incident['description']); ?> - <em>Status: <?php echo htmlspecialchars($incident['status']); ?></em></p>
+                    <p><strong>Attached Users:</strong> <?php echo !empty($incident['attached_usernames']) ? htmlspecialchars($incident['attached_usernames']) : 'NONE ATTACHED'; ?></p>
+                    <form method="post" class="inline">
+                        <input type="hidden" name="incident_id" value="<?php echo $incident['id']; ?>">
+                        <button type="submit" name="attach_self" class="ml-2 px-3 py-1 bg-green-500 rounded hover:bg-green-700">Attach Self</button>
+                    </form>
+                    <form method="post" class="inline">
+                        <input type="hidden" name="incident_id" value="<?php echo $incident['id']; ?>">
+                        <select name="status" class="bg-gray-700 text-white p-2 rounded">
+                            <option value="Open" <?php echo $incident['status'] === "Open" ? "selected" : ""; ?>>Open</option>
+                            <option value="Closed" <?php echo $incident['status'] === "Closed" ? "selected" : ""; ?>>Closed</option>
+                            <option value="On Scene" <?php echo $incident['status'] === "On Scene" ? "selected" : ""; ?>>On Scene</option>
+                            <option value="Enroute" <?php echo $incident['status'] === "Enroute" ? "selected" : ""; ?>>Enroute</option>
+                        </select>
+                        <button type="submit" name="update_incident_status" class="ml-2 px-3 py-1 bg-blue-500 rounded hover:bg-blue-700">Update Status</button>
+                    </form>
+                </div>
+            <?php endforeach; ?>
+        </div>
+    </div>
+</div>
+                <div class="bg-gray-900 mt-5 p-5 rounded-lg shadow-lg">
+                    <h2 class="text-xl mb-2">Reports</h2>
+                    <div id="reportsList"></div> <!-- Placeholder for reports -->
                 </div>
             </div>
         </div>
     </div>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script>
-    function toggleSidebar() {
-        var sidebar = document.getElementById("sidebar");
-        var mainContent = document.getElementById("mainContent");
-        sidebar.classList.toggle("hidden-sidebar");
-        mainContent.classList.toggle("full-width");
-    }
-
-    document.addEventListener('DOMContentLoaded', function () {
-        const dropdown = document.querySelector('.dropdown');
-        const dropdownMenu = document.querySelector('.dropdown-menu');
-
-        dropdown.addEventListener('click', function (event) {
-            event.stopPropagation();
-            dropdownMenu.style.display = dropdownMenu.style.display === 'block' ? 'none' : 'block';
-        });
-
-        window.addEventListener('click', function () {
-            if (dropdownMenu.style.display === 'block') {
-                dropdownMenu.style.display = 'none';
-            }
-        });
-    });
-
-    document.getElementById('panicButton').addEventListener('click', function() {
-        if (confirm('Are you sure you want to send a PANIC alert? This will notify all users.')) {
-            fetch('panic_alert.php', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ action: 'trigger_panic', username: '<?php echo $user['username']; ?>' })
-            })
-            .then(response => response.text())
-            .then(text => {
-                try {
-                    const data = JSON.parse(text);
-                    if (data.success) {
-                        alert('Panic alert sent successfully.');
-                    } else {
-                        alert('Error sending panic alert.');
-                    }
-                } catch (e) {
-                    console.error('Error parsing JSON:', e);
-                    alert('Error sending panic alert. Invalid response format.');
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('Error sending panic alert.');
-            });
+    <script>
+        function toggleSidebar() {
+            var sidebar = document.getElementById("sidebar");
+            var mainContent = document.getElementById("mainContent");
+            sidebar.classList.toggle("hidden-sidebar");
+            mainContent.classList.toggle("full-width");
         }
-    });
 
-    let storedData = JSON.parse(`<?php echo json_encode($response) ?>`);
-    function fetchUpdates() {
-        fetch('fetch_updates.php')
-            .then(response => response.json())
-            .then(data => {
-                // Update incidents
-                if(JSON.stringify(data) === JSON.stringify(storedData)) return;
-                storedData = data;
-                const activeCallsElement = document.getElementById('activeCalls');
-                activeCallsElement.innerHTML = ''; // Clear previous content
-                data.incidents.forEach(incident => {
-                    activeCallsElement.innerHTML += `
-                        <div class="bg-gray-800 p-4 rounded mb-2">
-                            <p><strong>${incident.title}</strong>: ${incident.description} - <em>Status: ${incident.status}</em></p>
-                            <form method="post">
-                                <input type="hidden" name="incident_id" value="${incident.id}">
-                                <select name="status" class="bg-gray-700 text-white p-2 rounded">
-                                    <option value="Open" ${incident.status == 'Open' ? 'selected' : ''}>Open</option>
-                                    <option value="Closed" ${incident.status == 'Closed' ? 'selected' : ''}>Closed</option>
-                                    <option value="On Scene" ${incident.status == 'On Scene' ? 'selected' : ''}>On Scene</option>
-                                    <option value="Enroute" ${incident.status == 'Enroute' ? 'selected' : ''}>Enroute</option>
-                                </select>
-                                <button type="submit" name="update_incident_status" class="ml-2 px-3 py-1 bg-blue-500 rounded hover:bg-blue-700">Update Status</button>
-                            </form>
-                        </div>
-                    `;
-                });
+        // JavaScript to handle dropdown behavior
+        document.addEventListener('DOMContentLoaded', function () {
+            const dropdown = document.querySelector('.dropdown');
+            const dropdownMenu = document.querySelector('.dropdown-menu');
 
-                // Update reports
-                const reportsListElement = document.getElementById('reportsList');
-                reportsListElement.innerHTML = ''; // Clear previous content
-                data.reports.forEach(report => {
-                    reportsListElement.innerHTML += `
-                        <div class="bg-gray-800 p-4 rounded mb-2">
-                            <p><strong>${report.author}</strong>: ${report.report_content} - <em>Status: ${report.status}</em></p>
-                            <form method="post">
-                                <input type="hidden" name="report_id" value="${report.report_id}">
-                                <select name="status" class="bg-gray-700 text-white p-2 rounded">
-                                    <option value="Open" ${report.status == 'Open' ? 'selected' : ''}>Open</option>
-                                    <option value="Closed" ${report.status == 'Closed' ? 'selected' : ''}>Closed</option>
-                                    <option value="On Scene" ${report.status == 'On Scene' ? 'selected' : ''}>On Scene</option>
-                                    <option value="Enroute" ${report.status == 'Enroute' ? 'selected' : ''}>Enroute</option>
-                                </select>
-                                <button type="submit" name="update_report_status" class="ml-2 px-3 py-1 bg-blue-500 rounded hover:bg-blue-700">Update Status</button>
-                            </form>
-                        </div>
-                    `;
-                });
-            })
-            .catch(error => console.error('Error fetching updates:', error));
-    }
+            dropdown.addEventListener('click', function (event) {
+                event.stopPropagation();
+                dropdownMenu.style.display = dropdownMenu.style.display === 'block' ? 'none' : 'block';
+            });
 
-    // Fetch updates every 5 seconds
-    setInterval(fetchUpdates, 5000);
-
-</script>
-
+            window.addEventListener('click', function () {
+                if (dropdownMenu.style.display === 'block') {
+                    dropdownMenu.style.display = 'none';
+                }
+            });
+        });
+    </script>
 </body>
 </html>

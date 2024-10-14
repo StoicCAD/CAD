@@ -93,7 +93,7 @@
 <body class="font-sans antialiased text-white">
     <div class="flex min-h-screen">
         <!-- Toggle Button -->
-        <button onclick="toggleSidebar()" class="sidebar-button text-white text-xl bg-gray-800 px-4 py-2 rounded">&#9776; Toggle</button>
+        <button onclick="toggleSidebar()" class="sidebar-button text-white text-xl bg-gray-800 px-4 py-2 rounded">&#9776;</button>
         
         <!-- Sidebar -->
         <?php include '../sidebar.php'; ?>
@@ -103,23 +103,24 @@
                 <h1 class="font-bold text-3xl mb-4">Add a New Arrest</h1>
                 <div class="bg-gray-800 p-6 rounded-lg shadow-lg">
                     <form action="" method="post" class="space-y-4">
-                        <div>
-                            <label for="officer_name" class="block text-sm font-medium">Officer Name:</label>
-                            <input type="text" id="officer_name" name="officer_name" required class="mt-1 block w-full p-2 rounded bg-gray-700">
-                        </div>
-                        <div>
-                            <label for="arrest_date" class="block text-sm font-medium">Arrest Date:</label>
-                            <input type="date" id="arrest_date" name="arrest_date" required class="mt-1 block w-full p-2 rounded bg-gray-700">
-                        </div>
-                        <div>
-                            <label for="charges" class="block text-sm font-medium">Charges:</label>
-                            <textarea id="charges" name="charges" rows="4" required class="mt-1 block w-full p-2 rounded bg-gray-700"></textarea>
-                        </div>
-                        <div>
-                            <label for="bail_amount" class="block text-sm font-medium">Bail Amount ($):</label>
-                            <input type="number" id="bail_amount" name="bail_amount" required class="mt-1 block w-full p-2 rounded bg-gray-700">
-                        </div>
-                        <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white px-4 py-2 rounded">Submit</button>
+                    <div>
+                        <label for="officer_name" class="block text-sm font-medium">Officer Name:</label>
+                        <input type="text" id="officer_name" name="officer_name" required class="mt-1 block w-full p-2 rounded bg-gray-700">
+                    </div>
+                    <div>
+                        <label for="arrest_date" class="block text-sm font-medium">Arrest Date:</label>
+                        <input type="datetime-local" id="arrest_date" name="arrest_date" required class="mt-1 block w-full p-2 rounded bg-gray-700">
+                    </div>
+                    <div>
+                        <label for="charges" class="block text-sm font-medium">Charges:</label>
+                        <textarea id="charges" name="charges" rows="4" required class="mt-1 block w-full p-2 rounded bg-gray-700"></textarea>
+                    </div>
+                    <div>
+                        <label for="bail_amount" class="block text-sm font-medium">Bail Amount ($):</label>
+                        <input type="number" id="bail_amount" name="bail_amount" required class="mt-1 block w-full p-2 rounded bg-gray-700">
+                    </div>
+                    <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white px-4 py-2 rounded">Submit</button>
+
                     </form>
                     <?php if (isset($error)): ?>
                         <p class="mt-4 bg-red-600 p-4 rounded"><?= htmlspecialchars($error); ?></p>
@@ -147,6 +148,18 @@
                 dropdown.querySelector('.dropdown-menu').style.display = 'none';
             });
         });
+        document.addEventListener('DOMContentLoaded', function () {
+    // Auto-fill the current date and time in the "Arrest Date" field
+    const arrestDateInput = document.getElementById('arrest_date');
+    const now = new Date();
+    
+    // Adjust the timezone offset
+    const tzOffset = now.getTimezoneOffset() * 60000; // Offset in milliseconds
+    const localTime = new Date(now - tzOffset).toISOString().slice(0, 16); // Correct format for datetime-local
+
+    arrestDateInput.value = localTime;
+});
+
     </script>
 </body>
 </html>

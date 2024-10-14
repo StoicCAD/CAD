@@ -94,7 +94,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && $char_id) {
 <body class="font-sans antialiased text-white">
     <div class="flex min-h-screen">
         <!-- Toggle Button -->
-        <button onclick="toggleSidebar()" class="sidebar-button text-white text-xl bg-gray-800 px-4 py-2 rounded">&#9776; Toggle</button>
+        <button onclick="toggleSidebar()" class="sidebar-button text-white text-xl bg-gray-800 px-4 py-2 rounded">&#9776;</button>
         
         <!-- Sidebar -->
         <?php include '../sidebar.php'; ?>
@@ -141,6 +141,16 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && $char_id) {
                 content.classList.add('full-width');
             }
         }
+        document.addEventListener('DOMContentLoaded', function () {
+            const issueDateInput = document.getElementById('issue_date');
+            const now = new Date();
+
+            // Adjust to local time and format it as required for input type="datetime-local"
+            const tzOffset = now.getTimezoneOffset() * 60000; // Offset in milliseconds
+            const localTime = new Date(now - tzOffset).toISOString().slice(0, 16); // Format for datetime-local
+
+            issueDateInput.value = localTime; // Set the input's value to current time
+        });
     </script>
 </body>
 </html>

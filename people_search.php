@@ -132,6 +132,7 @@
     <title>Searches - MDT</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css">
+    <link rel="stylesheet" href="scrollkit.css">
     <style>
         body {
             background-color: #0d121c; /* Set the background color */
@@ -140,6 +141,7 @@
             background-repeat: no-repeat;
             background-attachment: fixed;
         }
+        
         .dropdown-menu {
             display: none;
             position: absolute;
@@ -170,6 +172,7 @@
         .full-width {
             margin-left: 0; /* Full width when sidebar is hidden */
         }
+
         .modal {
             display: none;
             position: fixed;
@@ -272,7 +275,7 @@
         <?php include 'sidebar.php'; ?>
         <!-- Main Content -->
         <div id="mainContent" class="flex-1 flex flex-col ml-64 p-10 content">
-            <header class="mb-5">
+        <header class="mb-5">
                 <h1 class="font-bold text-3xl mb-4">Police Search Database</h1>
                 <div class="bg-gray-800 p-6 rounded-lg shadow-lg">
                     <form method="post" class="space-y-4">
@@ -302,22 +305,22 @@
                 <div class="bg-gray-800 mt-4 p-6 rounded-lg shadow-lg space-y-4">
                     <h2 class="text-xl font-semibold">Search Results</h2>
                     <?php foreach ($results as $row): ?>
-                        <div class="bg-gray-700 p-4 rounded-lg flex items-center">
-                            <div class="idcard-image" onclick="showModal('<?php echo htmlspecialchars($row['first_name']); ?>', '<?php echo htmlspecialchars($row['last_name']); ?>', '<?php echo htmlspecialchars($row['dob']); ?>', '<?php echo htmlspecialchars($row['gender']); ?>', '<?php echo htmlspecialchars($row['mugshot'] ?? 'config/NOMUG.png'); ?>', 'valid')">
+                        <div class="bg-gray-700 p-4 rounded-lg flex flex-col md:flex-row items-center">
+                            <div class="idcard-image cursor-pointer" onclick="showModal('<?php echo htmlspecialchars($row['first_name']); ?>', '<?php echo htmlspecialchars($row['last_name']); ?>', '<?php echo htmlspecialchars($row['dob']); ?>', '<?php echo htmlspecialchars($row['gender']); ?>', '<?php echo htmlspecialchars($row['mugshot'] ?? 'config/NOMUG.png'); ?>', 'valid')">
                                 <i class="fas fa-id-card fa-2x"></i>
                             </div>
-                            <div class="ml-4">
-                                <p><strong>Name:</strong> <?php echo htmlspecialchars($row['first_name'] . ' ' . $row['last_name']); ?></p>
-                                <p><strong>Date of Birth:</strong> <?php echo htmlspecialchars($row['dob']); ?></p>
-                                <p><strong>Gender:</strong> <?php echo htmlspecialchars($row['gender']); ?></p>
-                                <div>
-                                <div class="flex space-x-4"> <!-- Add space-x-4 to create horizontal space between the links -->
-    <a href="tickets.php" class="px-6 py-3 bg-blue-500 rounded hover:bg-blue-600">Tickets</a>
-    <a href="add/add_ticket.php?char_id=<?php echo htmlspecialchars($row['id']); ?>" class="px-6 py-3 bg-blue-500 rounded hover:bg-blue-600">Add Ticket</a>
-    <a href="add/add_arrest.php?char_id=<?php echo htmlspecialchars($row['id']); ?>" class="px-6 py-3 bg-red-500 rounded hover:bg-red-600">Add Arrest</a>
-    <a href="arrests.php" class="px-6 py-3 bg-red-500 rounded hover:bg-red-600">Arrests</a>
-</div>
+                            <div class="ml-4 flex-1">
+                            <p><strong>Name:</strong> <?php echo htmlspecialchars($row['first_name'] . ' ' . $row['last_name']); ?></p>
+<p><strong>Date of Birth:</strong> <?php echo htmlspecialchars($row['dob'] ?? 'N/A'); ?></p>
+<p><strong>Gender:</strong> <?php echo htmlspecialchars($row['gender'] ?? 'N/A'); ?></p>
 
+                                <div class="flex flex-col md:flex-row space-x-0 md:space-x-4 mt-2">
+                                    <a href="tickets.php" class="px-4 py-2 bg-blue-500 rounded hover:bg-blue-600">Tickets</a>
+                                    <a href="add/add_ticket.php?char_id=<?php echo htmlspecialchars($row['id']); ?>" class="px-4 py-2 bg-blue-500 rounded hover:bg-blue-600">Add Ticket</a>
+                                    <a href="add/add_arrest.php?char_id=<?php echo htmlspecialchars($row['id']); ?>" class="px-4 py-2 bg-red-500 rounded hover:bg-red-600">Add Arrest</a>
+                                    <a href="arrests.php" class="px-4 py-2 bg-red-500 rounded hover:bg-red-600">Arrests</a>
+                                </div>
+                            </div>
                         </div>
                     <?php endforeach; ?>
                 </div>
