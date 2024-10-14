@@ -46,6 +46,22 @@ $leoDepartments = [
     'LSFD',  // Los Santos Fire Department
 ];
 
+// Discord Webhook URL for Applications:
+// This is the URL used to send application notifications to a specific Discord channel.
+// Replace this with your actual webhook URL.
+define('DISCORD_WEBHOOK_URL', 'https://discord.com/api/webhooks/1295511883780063282/3TrB_koiwzwVGgiALJ_gZNjH44W4eDrRVzulvnQitpHXkD4KroQmgZwqBxN1VcABB2Nb');
+
+
+// Add this to your config.php for department choices
+$departments = [
+    'LSPD' => 'Los Santos Police Department (LSPD)',
+    'BCSO' => 'Blaine County Sheriff\'s Office (BCSO)',
+    'SASP' => 'San Andreas State Police (SASP)',
+    'SAFD' => 'San Andreas Fire Department (SAFD)',
+];
+
+
+
 // Establish PDO database connection
 try {
     $dsn = "mysql:host=" . DB_HOST . ";dbname=" . DB_NAME . ";charset=utf8mb4";
