@@ -10,7 +10,7 @@ CREATE TABLE IF NOT EXISTS `users` (
   `avatar_url` varchar(255) DEFAULT NULL,
   `password` varchar(255) NOT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
-  `dept` varchar(100) DEFAULT 'lspd',
+  `dept` varchar(100) DEFAULT 'CIV',
   `active_department` varchar(50) DEFAULT NULL,
   `rank` varchar(100) DEFAULT NULL,
   `badge_number` varchar(50) DEFAULT NULL,
