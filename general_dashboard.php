@@ -1,7 +1,7 @@
 <?php
 
 require_once 'config/db.php'; // Ensure this file contains the correct database connection setup
-
+require_once 'config/config.php'; // Ensure this file contains the correct configuration settings
 if (!isset($_SESSION['user_id'])) {
     header("Location: login.php");
     exit();
@@ -34,8 +34,10 @@ if (isset($_POST['submitApplication'])) {
     $previousExperience = $_POST['previousExperience'];
     $motivation = $_POST['motivation'];
 
+
     // Prepare the data to send to Discord webhook
-    $webhookurl = "https://discord.com/api/webhooks/1228466906277871758/CEOKB8sAAgbUm2BoxlWQrp5Jr1xqJe4X80z-XlUNhTzSLL4Vfvx3qwYDyOATl2QEL7CR";
+    $webhookurl = DISCORD_WEBHOOK_URL;  // Use the webhook URL from the config file
+
     $json_data = json_encode([
         "content" => "",
         "embeds" => [
@@ -149,10 +151,9 @@ if (isset($_POST['submitApplication'])) {
                     <div class="mb-4">
                         <label for="department" class="block text-sm font-medium text-gray-300">Department:</label>
                         <select name="department" id="department" required class="mt-1 block w-full p-2 bg-gray-700 text-white border border-gray-600 rounded shadow-sm focus:outline-none">
-                            <option value="LSPD">Los Santos Police Department (LSPD)</option>
-                            <option value="BCSO">Blaine County Sheriff's Office (BCSO)</option>
-                            <option value="SASP">San Andreas State Police (SASP)</option>
-                            <option value="SAFD">San Andreas Fire Department (SAFD)</option>
+                            <?php foreach ($departments as $value => $label) : ?>
+                                <option value="<?php echo $value; ?>"><?php echo $label; ?></option>
+                            <?php endforeach; ?>
                         </select>
                     </div>
 
