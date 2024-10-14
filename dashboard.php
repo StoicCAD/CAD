@@ -23,7 +23,7 @@ if (!$user) {
 
 // Redirect based on department
 if ($user['dept'] === 'CIV') {
-    header("Location: /civ/");
+    header("Location: civ/index.php");
     exit();
 }
 
@@ -80,10 +80,15 @@ if (isset($_POST['update_report_status'])) {
 }
 
 // Fetch incidents with attached users
+// $incidents_stmt = $conn->prepare("
+//     SELECT incidents.*, GROUP_CONCAT(users.username) AS attached_usernames 
+//     FROM incidents 
+//     LEFT JOIN users ON FIND_IN_SET(users.id, incidents.attached_users) 
+//     GROUP BY incidents.id 
+//     ORDER BY incidents.created_at DESC
+// ");
 $incidents_stmt = $conn->prepare("
-    SELECT incidents.*, GROUP_CONCAT(users.username) AS attached_usernames 
-    FROM incidents 
-    LEFT JOIN users ON FIND_IN_SET(users.id, incidents.attached_users) 
+    SELECT * FROM incidents
     GROUP BY incidents.id 
     ORDER BY incidents.created_at DESC
 ");
@@ -129,15 +134,15 @@ if (isset($_POST['attach_self'], $_POST['incident_id'])) {
 }
 
 // Fetch incidents with attached users
-$incidents_stmt = $conn->prepare("
-    SELECT incidents.*, GROUP_CONCAT(users.username) AS attached_usernames 
-    FROM incidents 
-    LEFT JOIN users ON FIND_IN_SET(users.id, incidents.attached_users) 
-    GROUP BY incidents.id 
-    ORDER BY incidents.created_at DESC
-");
-$incidents_stmt->execute();
-$incidents = $incidents_stmt->fetchAll(PDO::FETCH_ASSOC);
+// $incidents_stmt = $conn->prepare("
+//     SELECT incidents.*, GROUP_CONCAT(users.username) AS attached_usernames 
+//     FROM incidents 
+//     LEFT JOIN users ON FIND_IN_SET(users.id, incidents.attached_users) 
+//     GROUP BY incidents.id 
+//     ORDER BY incidents.created_at DESC
+// ");
+// $incidents_stmt->execute();
+// $incidents = $incidents_stmt->fetchAll(PDO::FETCH_ASSOC);
 
 ?>
 

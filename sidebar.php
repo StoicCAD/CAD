@@ -12,7 +12,7 @@
 
         <!-- Fetch user's departments -->
         <?php 
-        $userDepartments = explode(',', $user['dept']); // Assuming 'dept' is a comma-separated list of departments
+          $userDepartments = explode(',', $user['dept']); // Assuming 'dept' is a comma-separated list of departments
         ?>
 
         <!-- Change Active Department Form, shown only if no active department -->
@@ -49,40 +49,40 @@
         </button>
     </div>
     
-    <a href="/dashboard.php" class="block py-2.5 px-4 rounded hover:bg-blue-600"><i class="fas fa-home mr-2"></i>Dashboard</a>
-    <a href="/incidents.php" class="block py-2.5 px-4 rounded hover:bg-blue-600"><i class="fas fa-exclamation-triangle mr-2"></i>Active Calls</a>
-    <a href="/reports.php" class="block py-2.5 px-4 rounded hover:bg-blue-600"><i class="fas fa-file-alt mr-2"></i>Reports</a>
-    <a href="/map.php" class="block py-2.5 px-4 rounded hover:bg-blue-600"><i class="fas fa-map-marked-alt mr-2"></i>Map</a>
+    <a href="<?php echo DOMAIN ?>/dashboard.php" class="block py-2.5 px-4 rounded hover:bg-blue-600"><i class="fas fa-home mr-2"></i>Dashboard</a>
+    <a href="<?php echo DOMAIN ?>/incidents.php" class="block py-2.5 px-4 rounded hover:bg-blue-600"><i class="fas fa-exclamation-triangle mr-2"></i>Active Calls</a>
+    <a href="<?php echo DOMAIN ?>/reports.php" class="block py-2.5 px-4 rounded hover:bg-blue-600"><i class="fas fa-file-alt mr-2"></i>Reports</a>
+    <a href="<?php echo DOMAIN ?>/map.php" class="block py-2.5 px-4 rounded hover:bg-blue-600"><i class="fas fa-map-marked-alt mr-2"></i>Map</a>
 
     <!-- Dropdown for Searches -->
     <div class="relative dropdown">
         <a href="#" class="block py-2.5 px-4 rounded hover:bg-blue-600 cursor-pointer dropdown-toggle"><i class="fas fa-search mr-2"></i>Searches <i class="fa fa-caret-down"></i></a>
         <div class="dropdown-menu hidden">
-            <a href="/people_search.php" class="block py-2 px-4 text-sm text-white hover:bg-gray-600">People</a>
-            <a href="/vehicle_search.php" class="block py-2 px-4 text-sm text-white hover:bg-gray-600">Vehicles</a>
+            <a href="<?php echo DOMAIN ?>/people_search.php" class="block py-2 px-4 text-sm text-white hover:bg-gray-600">People</a>
+            <a href="<?php echo DOMAIN ?>/vehicle_search.php" class="block py-2 px-4 text-sm text-white hover:bg-gray-600">Vehicles</a>
         </div>
     </div>
-    <a href="/settings.php" class="block py-2.5 px-4 rounded hover:bg-blue-600"><i class="fas fa-cog mr-2"></i>Settings</a>
+    <a href="<?php echo DOMAIN ?>/settings.php" class="block py-2.5 px-4 rounded hover:bg-blue-600"><i class="fas fa-cog mr-2"></i>Settings</a>
 
     <?php 
     $departments = explode(',', $user['dept']);
     if (in_array('CIV', $departments)): ?>
-        <a href="/civ/" class="block py-2.5 px-4 rounded hover:bg-blue-600"><i class="fas fa-car mr-2"></i>Civilian Dashboard</a>
+        <a href="<?php echo DOMAIN ?>/civ/index.php" class="block py-2.5 px-4 rounded hover:bg-blue-600"><i class="fas fa-car mr-2"></i>Civilian Dashboard</a>
     <?php endif; ?>
 
     <?php if ($user['rank'] == 'Admin'): ?>
-        <a href="/admin-dash.php" class="block py-2.5 px-4 rounded hover:bg-blue-600"><i class="fas fa-user-shield mr-2"></i>Admin Dashboard</a>
+        <a href="<?php echo DOMAIN ?>/admin-dash.php" class="block py-2.5 px-4 rounded hover:bg-blue-600"><i class="fas fa-user-shield mr-2"></i>Admin Dashboard</a>
     <?php endif; ?>
 
     <?php if ($user['active_department'] == 'Dispatch'): ?>
-        <a href="/dispatch.php" class="block py-2.5 px-4 rounded hover:bg-blue-600"><i class="fas fa-user-shield mr-2"></i>Dispatch Dashboard</a>
+        <a href="<?php echo DOMAIN ?>/dispatch.php" class="block py-2.5 px-4 rounded hover:bg-blue-600"><i class="fas fa-user-shield mr-2"></i>Dispatch Dashboard</a>
     <?php endif; ?>
 
     <?php if ($user['super'] == 1): ?>
-        <a href="/super-dashboard.php" class="block py-2.5 px-4 rounded hover:bg-blue-600"><i class="fas fa-user-shield mr-2"></i>Supervisor Dashboard</a>
+        <a href="<?php echo DOMAIN ?>/super-dashboard.php" class="block py-2.5 px-4 rounded hover:bg-blue-600"><i class="fas fa-user-shield mr-2"></i>Supervisor Dashboard</a>
     <?php endif; ?>
     
-    <form method="post" action="/logout.php" class="mt-5">
+    <form method="post" action="<?php echo DOMAIN ?>/logout.php" class="mt-5">
         <button type="submit" name="logout" class="w-full py-2 bg-red-600 text-white rounded hover:bg-red-700 focus:outline-none">
             <i class="fas fa-sign-out-alt mr-2"></i> Logout
         </button>

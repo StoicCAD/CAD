@@ -6,7 +6,7 @@ if (!isset($_SESSION['user_id'])) {
     exit();
 }
 
-$stmt = $conn->prepare("SELECT username, avatar_url, dept, rank, badge_number, super FROM users WHERE id = ?");
+$stmt = $conn->prepare("SELECT * FROM users WHERE id = ?");
 $stmt->execute([$_SESSION['user_id']]);
 $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -434,7 +434,7 @@ $driversLicenseLeft = '30%';
                 <a href="incidents.php" class="block py-2.5 px-4 rounded hover:bg-blue-600"><i class="fas fa-exclamation-triangle mr-2"></i>Active Calls</a>
                 <a href="reports.php" class="block py-2.5 px-4 rounded hover:bg-blue-600"><i class="fas fa-file-alt mr-2"></i>Reports</a>
                 <?php if ($isAdmin): ?>
-                    <a href="admin.php" class="block py-2.5 px-4 rounded hover:bg-blue-600"><i class="fas fa-cogs mr-2"></i>Admin Panel</a>
+                    <a href="admin-dash.php" class="block py-2.5 px-4 rounded hover:bg-blue-600"><i class="fas fa-cogs mr-2"></i>Admin Panel</a>
                 <?php endif; ?>
             </nav>
 

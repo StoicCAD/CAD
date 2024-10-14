@@ -65,12 +65,23 @@ try {
     $stmt->execute([$user->id]);
     $existingUser = $stmt->fetch();
 
+    $countUsers = $conn->prepare("SELECT COUNT(*) as count FROM users");
+    $countUsers->execute();
+    $countUsers = $countUsers->fetch();
+
     if ($existingUser) {
         $_SESSION['user_id'] = $existingUser['id'];
     } else {
-        $avatarUrl = isset($user->avatar) ? "https://cdn.discordapp.com/avatars/{$user->id}/{$user->avatar}.png" : null;
-        $stmt = $conn->prepare("INSERT INTO users (discord_id, username, email, avatar_url) VALUES (?, ?, ?, ?)");
-        $stmt->execute([$user->id, $user->username, $user->email, $avatarUrl]);
+        $stmt = null;
+        if($countUsers['count'] > 0) {
+          $avatarUrl = isset($user->avatar) ? "https://cdn.discordapp.com/avatars/{$user->id}/{$user->avatar}.png" : null;
+          $stmt = $conn->prepare("INSERT INTO users (discord_id, username, email, avatar_url, password) VALUES (?, ?, ?, ?, 'NOT_SET')");
+          $stmt->execute([$user->id, $user->username, $user->email, $avatarUrl]);
+        } else {
+          $avatarUrl = isset($user->avatar) ? "https://cdn.discordapp.com/avatars/{$user->id}/{$user->avatar}.png" : null;
+          $stmt = $conn->prepare("INSERT INTO users (discord_id, username, email, avatar_url, password, dept, `rank`, super) VALUES (?, ?, ?, ?, 'NOT_SET', 'CIV,LSPD,BCSO,SASP,SWAT,LSFD,Dispatch', ?, ?)");
+          $stmt->execute([$user->id, $user->username, $user->email, $avatarUrl, "Admin", 1]);
+        }
         $_SESSION['user_id'] = $conn->lastInsertId();
     }
 

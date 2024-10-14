@@ -9,6 +9,10 @@ session_start();
 // ---- Configuration Section ----
 // Fill in the necessary credentials and other details below to set up Discord OAuth and your database
 
+
+// Define Website url (NO TRAILING /)
+define("DOMAIN", 'http://localhost/GITHUB/cad');
+
 // Database Credentials:
 define('DB_HOST', '127.0.0.1:3308');  // The IP address or hostname of your database server (usually 'localhost' or '127.0.0.1')
 define('DB_USERNAME', 'discord');        // The MySQL database username (replace with your database user)
