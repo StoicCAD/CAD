@@ -57,7 +57,7 @@ if (isset($tokenData['access_token'])) {
     
     // Redirect to the dashboard
     header("Location: dashboard.php");
-    exit;
+    exit();
 } else {
     die('Error fetching access token');
 }

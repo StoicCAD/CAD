@@ -33,7 +33,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         // Insert the report
         $stmt = $conn->prepare("INSERT INTO reports (author, perpetrator, report_date, report_content, status, user_id) VALUES (?, ?, ?, ?, ?, ?)");
         if ($stmt->execute([$author, $perpetrator, $report_date, $content, $status, $user_id])) {
-            echo "<p class='text-green-500'>Report successfully submitted.</p>";
+          header("Location: reports.php");
+          exit();
         } else {
             echo "<p class='text-red-500'>Error submitting report. Please try again.</p>";
         }
@@ -118,8 +119,8 @@ if (empty($reports)) {
                     <h2 class="text-xl font-semibold mb-4">Create New Report</h2>
                     <form method="post" class="space-y-4">
                         <div>
-                            <label for="subject" class="block mb-1">Reporter (Author):</label>
-                            <input type="text" id="subject" name="subject" required class="w-full h-10 px-3 rounded bg-gray-700 focus:bg-gray-600 outline-none">
+                            <label for="author" class="block mb-1">Reporter (Author):</label>
+                            <input type="text" id="author" name="author" required class="w-full h-10 px-3 rounded bg-gray-700 focus:bg-gray-600 outline-none">
                         </div>
                         <div>
                             <label for="perpetrator" class="block mb-1">Perpetrator:</label>

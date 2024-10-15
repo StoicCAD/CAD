@@ -37,7 +37,7 @@
     </div>
 
     <nav>
-    <div class="flex flex-col items-center mt-5 pb-4 border-b">
+    <div class="flex flex-col items-center mt-5 pb-4 border-b mb-3">
         <!-- On-Duty / Off-Duty Button -->
         <button id="toggleDutyButton" class="w-full bg-green-600 text-white py-2 px-4 rounded hover:bg-green-700 focus:outline-none">
             <?php echo $user['online'] ? 'Off-Duty' : 'On-Duty'; ?>

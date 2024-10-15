@@ -27,6 +27,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
     $stmt = $conn->prepare("INSERT INTO incidents (title, description, reported_by, attached_users) VALUES (?, ?, ?, ?)");
     $stmt->execute([$title, $description, $reported_by, $attached_users]);
+    
+    header("Location: incidents.php");
+    exit();
 }
 
 // Fetch incidents with attached user details
