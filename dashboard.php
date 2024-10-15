@@ -36,7 +36,7 @@ const STATUS_ENROUTE = 'Enroute';
 $allowedStatuses = [STATUS_OPEN, STATUS_CLOSED, STATUS_ON_SCENE, STATUS_ENROUTE];
 
 $versionUrl = 'https://raw.githubusercontent.com/StoicCAD/CAD/standalone/version.txt'; // Use the raw content URL
-$currentVersion = '1.2.5';
+$currentVersion = '1.2.6';
 
 function getLatestVersion($url) {
     $version = @file_get_contents($url);
@@ -95,6 +95,11 @@ $reports_stmt = $conn->prepare("SELECT * FROM reports ORDER BY report_date DESC"
 $reports_stmt->execute();
 $reports = $reports_stmt->fetchAll(PDO::FETCH_ASSOC);
 
+$response = [
+    'incidents' => $incidents,
+    'reports' => $reports,
+];
+
 // Logout functionality
 if (isset($_POST['logout'])) {
     session_destroy();
@@ -122,6 +127,17 @@ if (isset($_POST['attach_self'], $_POST['incident_id'])) {
         echo "Failed to attach user.";
     }
 }
+
+// Fetch incidents with attached users
+$incidents_stmt = $conn->prepare("
+    SELECT incidents.*, GROUP_CONCAT(users.username) AS attached_usernames 
+    FROM incidents 
+    LEFT JOIN users ON FIND_IN_SET(users.id, incidents.attached_users) 
+    GROUP BY incidents.id 
+    ORDER BY incidents.created_at DESC
+");
+$incidents_stmt->execute();
+$incidents = $incidents_stmt->fetchAll(PDO::FETCH_ASSOC);
 
 ?>
 
@@ -194,69 +210,90 @@ if (isset($_POST['attach_self'], $_POST['incident_id'])) {
                     </div>
                 </div>
             <?php endif; ?>
-
-            <!-- Display incidents -->
-            <div id="content">
-                <div class="bg-gray-900 p-6 rounded-lg shadow-md">
-                    <h2 class="text-xl mb-2">Active Calls</h2>
-                    <div id="activeCalls">
-                        <?php foreach ($incidents as $incident): ?>
-                            <div class="bg-gray-800 p-4 rounded mb-2">
-                                <p><strong><?php echo htmlspecialchars($incident['title']); ?></strong>: <?php echo htmlspecialchars($incident['description']); ?> - <em>Status: <?php echo htmlspecialchars($incident['status']); ?></em></p>
-                                <p><strong>Attached Users:</strong> <?php echo !empty($incident['attached_usernames']) ? htmlspecialchars($incident['attached_usernames']) : 'NONE ATTACHED'; ?></p>
-                                <form method="post" class="inline">
-                                    <input type="hidden" name="incident_id" value="<?php echo $incident['id']; ?>">
-                                    <button type="submit" name="attach_self" class="ml-2 px-3 py-1 bg-green-500 rounded hover:bg-green-700">Attach Self</button>
-                                </form>
-                                <form method="post" class="inline">
-                                    <input type="hidden" name="incident_id" value="<?php echo $incident['id']; ?>">
-                                    <select name="status" class="bg-gray-700 text-white p-2 rounded">
-                                        <option value="Open" <?php echo $incident['status'] === "Open" ? "selected" : ""; ?>>Open</option>
-                                        <option value="Closed" <?php echo $incident['status'] === "Closed" ? "selected" : ""; ?>>Closed</option>
-                                        <option value="On Scene" <?php echo $incident['status'] === "On Scene" ? "selected" : ""; ?>>On Scene</option>
-                                        <option value="Enroute" <?php echo $incident['status'] === "Enroute" ? "selected" : ""; ?>>Enroute</option>
-                                    </select>
-                                    <button type="submit" name="update_incident_status" class="ml-2 px-3 py-1 bg-blue-500 rounded hover:bg-blue-700">Update Status</button>
-                                </form>
-                            </div>
-                        <?php endforeach; ?>
+<!-- Display incidents -->
+<div id="content">
+    <div class="bg-gray-900 p-6 rounded-lg shadow-md">
+        <h2 class="text-xl mb-2">Active Calls</h2>
+        <div id="activeCalls">
+            <?php foreach ($incidents as $incident): ?>
+                <div class="bg-gray-800 p-4 rounded mb-2">
+                    <div class="flex flex-col gap"><div class="flex flex-row gap-2"><strong>Title: </strong><?php echo htmlspecialchars($incident['title']); ?></div><div class="flex flex-col gap"><div class="flex flex-row gap-2"><strong>Description:</strong> <?php echo htmlspecialchars($incident['description']); ?></div><em><strong>Status:</strong> <?php echo htmlspecialchars($incident['status']); ?></em></div></div>
+                    <p><strong>Attached Users:</strong> <?php echo !empty($incident['attached_usernames']) ? htmlspecialchars($incident['attached_usernames']) : 'NONE ATTACHED'; ?></p>
+                    <div class="flex flex-row gap-3 items-center mt-2">
+                      <form method="post" class="">
+                        <input type="hidden" name="incident_id" value="<?php echo $incident['id']; ?>">
+                        <button type="submit" name="attach_self" class="px-3 py-1 bg-green-500 rounded hover:bg-green-700">Attach Self</button>
+                      </form>
+                      <form method="post" class="">
+                          <input type="hidden" name="incident_id" value="<?php echo $incident['id']; ?>">
+                          <select name="status" class="bg-gray-700 text-white p-1 rounded h-full">
+                              <option value="Open" <?php echo $incident['status'] === "Open" ? "selected" : ""; ?>>Open</option>
+                              <option value="Closed" <?php echo $incident['status'] === "Closed" ? "selected" : ""; ?>>Closed</option>
+                              <option value="On Scene" <?php echo $incident['status'] === "On Scene" ? "selected" : ""; ?>>On Scene</option>
+                              <option value="Enroute" <?php echo $incident['status'] === "Enroute" ? "selected" : ""; ?>>Enroute</option>
+                          </select>
+                          <button type="submit" name="update_incident_status" class="ml-2 px-3 py-1 bg-blue-500 rounded hover:bg-blue-700">Update Status</button>
+                      </form>
                     </div>
                 </div>
-
-            <!-- Display Reports -->
-                <div class="bg-gray-900 p-6 rounded-lg shadow-md mt-4">
-                    <h2 class="text-xl mb-2">Reports</h2>
-                    <div id="reports">
-                        <?php foreach ($reports as $report): ?>
-                            <div class="bg-gray-800 p-4 rounded mb-2">
-                                <p><strong><?php echo htmlspecialchars($report['report_title'] ?? 'Untitled Report'); ?></strong></p>
-                                <p><?php echo htmlspecialchars($report['report_content'] ?? 'No content available.'); ?></p>
-                                <p><em>Status: <?php echo htmlspecialchars($report['status'] ?? 'Unknown'); ?></em></p>
-                                <form method="post" class="inline">
-                                    <input type="hidden" name="report_id" value="<?php echo $report['report_id']; ?>">
-                                    <select name="status" class="bg-gray-700 text-white p-2 rounded">
-                                        <option value="Pending" <?php echo ($report['status'] ?? '') === "Pending" ? "selected" : ""; ?>>Pending</option>
-                                        <option value="Reviewed" <?php echo ($report['status'] ?? '') === "Reviewed" ? "selected" : ""; ?>>Reviewed</option>
-                                        <option value="Closed" <?php echo ($report['status'] ?? '') === "Closed" ? "selected" : ""; ?>>Closed</option>
-                                    </select>
-                                    <button type="submit" name="update_report_status" class="ml-2 px-3 py-1 bg-blue-500 rounded hover:bg-blue-700">Update Status</button>
-                                </form>
-                            </div>
-                        <?php endforeach; ?>
-                    </div>
-                </div>
-
-            </div>
+            <?php endforeach; ?>
+            <?php if(count($incidents) < 1): ?>
+              <p class="text-gray-400">No Active calls...</p>
+            <?php endif; ?>
         </div>
     </div>
-
+</div>
+                <div class="bg-gray-900 mt-5 p-5 rounded-lg shadow-lg">
+                    <h2 class="text-xl mb-2">Reports</h2>
+                    <div id="reports">
+                      <?php foreach ($reports as $report): ?>
+                          <div class="bg-gray-800 p-4 rounded mb-2">
+                              <p><strong><?php echo htmlspecialchars($report['report_title'] ?? 'Untitled Report'); ?></strong></p>
+                              <p><?php echo htmlspecialchars($report['report_content'] ?? 'No content available.'); ?></p>
+                              <p><em>Status: <?php echo htmlspecialchars($report['status'] ?? 'Unknown'); ?></em></p>
+                              <form method="post" class="inline">
+                                  <input type="hidden" name="report_id" value="<?php echo $report['report_id']; ?>">
+                                  <select name="status" class="bg-gray-700 text-white p-2 rounded">
+                                      <option value="Pending" <?php echo ($report['status'] ?? '') === "Pending" ? "selected" : ""; ?>>Pending</option>
+                                      <option value="Reviewed" <?php echo ($report['status'] ?? '') === "Reviewed" ? "selected" : ""; ?>>Reviewed</option>
+                                      <option value="Closed" <?php echo ($report['status'] ?? '') === "Closed" ? "selected" : ""; ?>>Closed</option>
+                                  </select>
+                                  <button type="submit" name="update_report_status" class="ml-2 px-3 py-1 bg-blue-500 rounded hover:bg-blue-700">Update Status</button>
+                              </form>
+                          </div>
+                      <?php endforeach; ?>
+                    </div> <!-- Placeholder for reports -->
+                    <?php if(count($reports) < 1): ?>
+                      <p class="text-gray-400">No reports...</p>
+                    <?php endif; ?>
+                </div>
+            </div>
+        </div>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
         function toggleSidebar() {
-            const sidebar = document.getElementById('sidebar');
-            sidebar.classList.toggle('hidden-sidebar');
-            const mainContent = document.getElementById('mainContent');
-            mainContent.classList.toggle('ml-64');
+            var sidebar = document.getElementById("sidebar");
+            var mainContent = document.getElementById("mainContent");
+            sidebar.classList.toggle("hidden-sidebar");
+            mainContent.classList.toggle("full-width");
         }
+
+        // JavaScript to handle dropdown behavior
+        document.addEventListener('DOMContentLoaded', function () {
+            const dropdown = document.querySelector('.dropdown');
+            const dropdownMenu = document.querySelector('.dropdown-menu');
+
+            dropdown.addEventListener('click', function (event) {
+                event.stopPropagation();
+                dropdownMenu.style.display = dropdownMenu.style.display === 'block' ? 'none' : 'block';
+            });
+
+            window.addEventListener('click', function () {
+                if (dropdownMenu.style.display === 'block') {
+                    dropdownMenu.style.display = 'none';
+                }
+            });
+        });
     </script>
 </body>
 </html>

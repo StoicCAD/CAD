@@ -37,14 +37,14 @@
     </div>
 
     <nav>
-    <div class="flex flex-col items-center mt-5">
+    <div class="flex flex-col items-center mt-5 pb-4 border-b">
         <!-- On-Duty / Off-Duty Button -->
-        <button id="toggleDutyButton" class="bg-green-600 text-white py-2 px-4 rounded hover:bg-green-700 focus:outline-none">
+        <button id="toggleDutyButton" class="w-full bg-green-600 text-white py-2 px-4 rounded hover:bg-green-700 focus:outline-none">
             <?php echo $user['online'] ? 'Off-Duty' : 'On-Duty'; ?>
         </button>
 
         <!-- Panic Button -->
-        <button id="panicButton" class="bg-red-600 text-white py-2 px-4 rounded hover:bg-red-700 focus:outline-none mt-2">
+        <button id="panicButton" class="w-full bg-red-600 text-white py-2 px-4 rounded hover:bg-red-700 focus:outline-none mt-2">
             <i class="fas fa-exclamation-triangle mr-2"></i> Panic
         </button>
     </div>
