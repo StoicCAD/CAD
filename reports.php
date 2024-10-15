@@ -23,15 +23,16 @@ $reports = []; // Set a default value for $reports
 // Handle form submissions
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     if (isset($_POST['submit'])) {
-        $author = trim($_POST['subject'] ?? ''); // Changed 'subject' to 'author'
+        $author = trim($_POST['author'] ?? ''); // Changed 'subject' to 'author'
         $content = trim($_POST['content'] ?? '');
         $perpetrator = trim($_POST['perpetrator'] ?? '');
         $report_date = date("Y-m-d H:i:s");
         $status = 'Open';
+        $user_id = $_SESSION['user_id']; // Assuming the user_id is stored in session
 
-        // Insert the report without checking for character_id
-        $stmt = $conn->prepare("INSERT INTO reports (author, perpetrator, report_date, report_content, status) VALUES (?, ?, ?, ?, ?)");
-        if ($stmt->execute([$author, $perpetrator, $report_date, $content, $status])) {
+        // Insert the report
+        $stmt = $conn->prepare("INSERT INTO reports (author, perpetrator, report_date, report_content, status, user_id) VALUES (?, ?, ?, ?, ?, ?)");
+        if ($stmt->execute([$author, $perpetrator, $report_date, $content, $status, $user_id])) {
             echo "<p class='text-green-500'>Report successfully submitted.</p>";
         } else {
             echo "<p class='text-red-500'>Error submitting report. Please try again.</p>";
@@ -50,8 +51,8 @@ if (empty($reports)) {
     $reports_stmt->execute();
     $reports = $reports_stmt->fetchAll(PDO::FETCH_ASSOC);
 }
-
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
