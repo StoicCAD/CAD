@@ -1,6 +1,4 @@
-ALTER TABLE `incidents`
-  ADD COLUMN IF NOT EXISTS `attached_users` varchar(255) DEFAULT NULL,
-  ADD COLUMN IF NOT EXISTS `status` varchar(255) DEFAULT 'Open';
+use stoiccad;
 
 ALTER TABLE reports DROP FOREIGN KEY reports_ibfk_1; -- Replace with the actual constraint name if different
 ALTER TABLE reports DROP COLUMN character_id;

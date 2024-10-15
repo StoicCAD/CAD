@@ -143,8 +143,8 @@ if (empty($reports)) {
                 <!-- Reports Table -->
                 <div class="bg-gray-900 p-6 rounded-lg shadow-lg">
                     <h2 class="text-xl font-semibold mb-4">Existing Reports</h2>
-                    <table class="w-full text-sm text-left text-gray-500">
-                        <thead class="text-xs text-gray-700 uppercase bg-gray-900">
+                    <table class="w-full text-sm text-left text-gray-500 rounded-xl">
+                        <thead class="text-xs text-gray-400 uppercase bg-gray-800">
                             <tr>
                                 <th scope="col" class="px-6 py-3">Reporter</th>
                                 <th scope="col" class="px-6 py-3">Perpetrator</th>
@@ -156,7 +156,7 @@ if (empty($reports)) {
                         <tbody>
                             <?php if (!empty($reports)) : ?>
                                 <?php foreach ($reports as $report) : ?>
-                                    <tr class="bg-gray-700 border-b border-gray-900">
+                                    <tr class="bg-gray-700 border-b border-gray-900 text-white">
                                         <td class="px-6 py-4"><?= htmlspecialchars($report['author']) ?></td>
                                         <td class="px-6 py-4"><?= htmlspecialchars($report['perpetrator']) ?></td>
                                         <td class="px-6 py-4"><?= htmlspecialchars($report['report_date']) ?></td>
