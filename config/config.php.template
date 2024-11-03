@@ -1,0 +1,73 @@
+<?php
+
+// MAKE A COPY OF THIS FILE AND NAME IT config.php IN THIS SAME DIRECTORY
+
+// Enable error reporting for debugging during development
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+
+// Start session management
+session_start();
+
+// ---- Configuration Section ----
+// Fill in the necessary credentials and other details below to set up Discord OAuth and your database
+
+// Define Website url (NO TRAILING /)
+define("DOMAIN", 'http://localhost/GITHUB/cad');
+
+// Database Credentials:
+define('DB_HOST', '127.0.0.1');  // The IP address or hostname of your database server (usually 'localhost' or '127.0.0.1')
+define('DB_USERNAME', '');        // The MySQL database username (replace with your database user)
+define('DB_PASSWORD', '');        // The MySQL database password (replace with your user's password)
+define('DB_NAME', '');     // The name of the database you are connecting to
+
+// Discord OAuth Client Credentials:
+// You must register your application with Discord to obtain these credentials
+define('CLIENT_ID', '');           // Your Discord client ID
+define('CLIENT_SECRET', '-');      // Your Discord client secret
+
+// Redirect URI:
+// This is the URL to which Discord will redirect users after successful authentication
+define('REDIRECTURI', 'https://mdt.stoiccad.com/process-oauth.php');
+
+// STOICCAD Token:
+// Generate this token by logging into https://stoiccad.com/login.php and navigating to the dashboard
+define('TOKEN', '4514bfc279309e467331f559fee8fa1f');  // Insert your generated token here
+
+//Access the map at http://<server IP>:<server port>/webmap/
+// or 
+//https://<owner>-<server ID>.users.cfx.re/webmap/ (Note: The trailing slash is necessary).
+// Webmap Access URL:
+$iframeUrl = "https://thestoicbear-3kgkoo.users.cfx.re/webmap//";
+
+// LEO Departments
+$leoDepartments = [
+    'LSPD',  // Los Santos Police Department
+    'BCSO',  // Blaine County Sheriff's Office
+    'SAHP',  // San Andreas Highway Patrol
+    'LSFD',  // Los Santos Fire Department
+];
+
+// Establish PDO database connection
+try {
+    $dsn = "mysql:host=" . DB_HOST . ";dbname=" . DB_NAME . ";charset=utf8mb4";
+    $options = [
+        PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
+        PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+        PDO::ATTR_EMULATE_PREPARES   => false,
+    ];
+    $conn = new PDO($dsn, DB_USERNAME, DB_PASSWORD, $options);
+} catch (PDOException $e) {
+    die("Could not connect to the database " . DB_NAME . ": " . $e->getMessage());
+}
+
+// Function to check if user is logged in
+function isLoggedIn() {
+    if (!isset($_SESSION['user_id'])) {
+        header("Location: index.php");
+        exit;
+    }
+}
+?>
+
+

@@ -1,0 +1,222 @@
+body {
+    background-color: #0d121c; /* Set the background color */
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+  }
+  .dropdown-menu {
+    display: none;
+    position: absolute;
+    left: 0;
+    z-index: 1000;
+    width: 100%;
+    background: #4b5563; /* Matching Tailwind's gray-700 */
+    border-radius: 0 0 0.5rem 0.5rem;
+  }
+  .sidebar {
+    transition: transform 1.3s ease-out;
+    transform: translateX(0);
+    z-index: 10;
+  }
+  .hidden-sidebar {
+    transform: translateX(-100%);
+  }
+  .sidebar-button {
+    position: fixed;
+    top: 10px;
+    left: 10px;
+    z-index: 20;
+  }
+  .content {
+    transition: margin-left 1.4s ease-out;
+    margin-right: 120px; /* match sidebar width when visible */
+  }
+  .full-width {
+    margin-left: 0; /* full width when sidebar is hidden */
+  }
+  /* Custom scrollbar styles for sidebar */
+  .sidebar::-webkit-scrollbar {
+    width: 8px; /* Width of the scrollbar */
+  }
+  
+  .sidebar::-webkit-scrollbar-thumb {
+    background-color: #4b5563; /* Thumb color */
+    border-radius: 10px;
+  }
+  
+  .sidebar::-webkit-scrollbar-track {
+    background-color: #1f2937; /* Track color */
+  }
+  
+  /* Custom scrollbar styles for content */
+  .content {
+    overflow-y: auto; /* Ensure vertical scroll */
+  }
+  
+  .content::-webkit-scrollbar {
+    width: 8px; /* Width of the scrollbar */
+  }
+  
+  .content::-webkit-scrollbar-thumb {
+    background-color: #4b5563; /* Thumb color */
+    border-radius: 10px;
+  }
+  
+  .content::-webkit-scrollbar-track {
+    background-color: #1f2937; /* Track color */
+  }
+  
+  /* Firefox */
+  .sidebar,
+  .content {
+    scrollbar-width: thin; /* Scrollbar width */
+    scrollbar-color: #4b5563 #1f2937; /* Thumb and track colors */
+  }
+  /* Custom scrollbar styles for the entire body */
+  body::-webkit-scrollbar {
+    width: 8px; /* Width of the scrollbar */
+  }
+  
+  body::-webkit-scrollbar-thumb {
+    background-color: #4b5563; /* Thumb color */
+    border-radius: 10px;
+  }
+  
+  body::-webkit-scrollbar-track {
+    background-color: #1f2937; /* Track color */
+  }
+  
+  .map-container {
+    width: 100%;
+    height: 500px; /* Adjust height as needed */
+    border: none; /* Remove border */
+  }
+  .modal {
+    display: none;
+    position: fixed;
+    z-index: 1001;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+  }
+  .modal-content {
+    position: relative;
+    background-color: #fefefe00;
+    margin: 15% auto;
+    padding: 20px;
+    width: 80%;
+    max-width: 500px;
+    height: 250px; /* Adjust based on your background image size */
+  }
+  .close {
+    color: #aaa;
+    position: absolute;
+    top: 10px;
+    right: 25px;
+    font-size: 28px;
+    font-weight: bold;
+  }
+  .close:hover,
+  .close:focus {
+    color: black;
+    text-decoration: none;
+    cursor: pointer;
+  }
+  .idcard-image {
+    cursor: pointer;
+    transition: transform 0.2s;
+  }
+  .idcard-image:hover {
+    transform: scale(1.05);
+  }
+  .content-container {
+    padding-top: 100px; /* Added top padding to move content down */
+  }
+  .modal-data {
+    position: absolute;
+    width: 100%;
+    text-align: center;
+    font-size: 14px; /* Adjusted font size for better fit */
+    font-weight: bold;
+    color: #fff; /* Black color for visibility on a light background */
+  }
+  .modal-dataN {
+    position: absolute;
+    width: 100%;
+    text-align: center;
+    font-size: 22px; /* Adjusted font size for better fit */
+    font-weight: bold;
+    color: #fff; /* Black color for visibility on a light background */
+  }
+  #mugshotImage {
+    position: absolute;
+    top: 55px; /* Adjusted for vertical alignment */
+    left: 40px; /* Closer to the left edge of the modal */
+    width: 100px; /* Size as per your specification */
+    height: 100px; /* Size as per your specification */
+    border-radius: 50%;
+    transform: translate(
+      0,
+      0
+    ); /* Removed the centering transform if not needed */
+  }
+  .signature {
+    font-family: "Great Vibes", cursive;
+    font-size: 24px;
+    color: #fff; /* Adjust as needed */
+    position: absolute;
+    left: 50%; /* Center horizontally */
+    top: 150px; /* Position where it fits on your background */
+    transform: translateX(-50%); /* Center align */
+  }
+  /* Close button */
+  /* Basic styles for the collapsible sections */
+  .collapsible {
+    cursor: pointer;
+    padding: 10px;
+    border: 1px solid #1f2937;
+    border-radius: 5px;
+    background-color: #1f2937;
+    color: #fff;
+    font-size: 18px;
+    margin-bottom: 10px;
+    transition: background-color 0.3s;
+  }
+  .collapsible:hover {
+    background-color: #2563eb;
+  }
+  .collapsible-content {
+    display: none;
+    padding: 10px;
+    border: 1px solid #1f2937;
+    border-radius: 5px;
+    background-color: #1f2937;
+  }
+  .collapsible-content iframe {
+    width: 100%;
+    height: 400px;
+    border: none;
+  }
+  .collapsible-content form {
+    margin-top: 10px;
+  }
+  .collapsible-content form button {
+    margin-top: 10px;
+  }
+  .close {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+  }
+  
+  .close:hover,
+  .close:focus {
+    color: black;
+    text-decoration: none;
+    cursor: pointer;
+  }
+  
