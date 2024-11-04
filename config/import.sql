@@ -66,6 +66,7 @@ CREATE TABLE IF NOT EXISTS `incidents` (
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `reported_by` int(11) NOT NULL,
   `status` varchar(255) DEFAULT 'Open',
+  `attached_users` varchar(255) DEFAULT NULL, -- Added column for attached users
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=68 DEFAULT CHARSET=utf8mb4;
 
@@ -117,4 +118,3 @@ CREATE TABLE IF NOT EXISTS `vehicles` (
   KEY `owner` (`owner`),
   CONSTRAINT `vehicles_ibfk_1` FOREIGN KEY (`owner`) REFERENCES `characters` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4;
-
