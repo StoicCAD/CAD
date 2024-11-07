@@ -107,14 +107,14 @@ CREATE TABLE IF NOT EXISTS `tickets` (
   CONSTRAINT `tickets_ibfk_1` FOREIGN KEY (`character_id`) REFERENCES `characters` (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4;
 
-CREATE TABLE IF NOT EXISTS `vehicles` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `plate` varchar(15) NOT NULL,
-  `properties` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL CHECK (json_valid(`properties`)),
-  `owner` int(11) DEFAULT NULL,
-  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `plate` (`plate`),
-  KEY `owner` (`owner`),
-  CONSTRAINT `vehicles_ibfk_1` FOREIGN KEY (`owner`) REFERENCES `characters` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4;
+-- CREATE TABLE IF NOT EXISTS `vehicles` (
+--   `id` int(11) NOT NULL AUTO_INCREMENT,
+--   `plate` varchar(15) NOT NULL,
+--   `properties` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL CHECK (json_valid(`properties`)),
+--   `owner` int(11) DEFAULT NULL,
+--   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+--   PRIMARY KEY (`id`),
+--   UNIQUE KEY `plate` (`plate`),
+--   KEY `owner` (`owner`),
+--   CONSTRAINT `vehicles_ibfk_1` FOREIGN KEY (`owner`) REFERENCES `characters` (`id`) ON DELETE CASCADE
+-- ) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4;
