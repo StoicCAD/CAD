@@ -1,7 +1,6 @@
 <?php
-session_start();
-require_once '../config/db.php'; // Ensure this file contains your PDO connection logic
 
+require_once '../config/db.php'; // Ensure this file contains your PDO connection logic
 
 if (!isset($_GET['arrest_id']) || !is_numeric($_GET['arrest_id'])) {
     echo "Invalid arrest ID.";
@@ -20,9 +19,13 @@ if (!$currentData) {
 }
 
 $type = 'arrest';
+
+// Convert arrest_date to DateTime object
+$arrest_date = new DateTime($currentData['arrest_date']); // Convert string to DateTime
+
 $fields = [
     'officer_name' => $currentData['officer_name'],
-    'arrest_date' => $currentData['arrest_date']->format('Y-m-d H:i:s'),
+    'arrest_date' => $arrest_date->format('Y-m-d H:i:s'), // Use format after converting to DateTime
     'charges' => $currentData['charges'],
     'bail_amount' => $currentData['bail_amount']
 ];
