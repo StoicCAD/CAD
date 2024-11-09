@@ -82,18 +82,17 @@ CREATE TABLE IF NOT EXISTS `arrests` (
   CONSTRAINT `arrests_ibfk_1` FOREIGN KEY (`character_id`) REFERENCES `characters` (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4;
 
+
 CREATE TABLE IF NOT EXISTS `reports` (
   `report_id` int(11) NOT NULL AUTO_INCREMENT,
-  `character_id` int(11) NOT NULL,
   `author` varchar(100) DEFAULT NULL,
   `perpetrator` varchar(100) DEFAULT NULL,
   `report_date` datetime DEFAULT NULL,
   `report_content` text DEFAULT NULL,
   `status` varchar(20) DEFAULT 'Open',
-  PRIMARY KEY (`report_id`),
-  KEY `character_id` (`character_id`),
-  CONSTRAINT `reports_ibfk_1` FOREIGN KEY (`character_id`) REFERENCES `characters` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=15 DEFAULT CHARSET=utf8mb4;
+  `user_id` int(11) DEFAULT NULL,
+  PRIMARY KEY (`report_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=23 DEFAULT CHARSET=utf8mb4;
 
 CREATE TABLE IF NOT EXISTS `tickets` (
   `ticket_id` int(11) NOT NULL AUTO_INCREMENT,
