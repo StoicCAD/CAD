@@ -36,7 +36,7 @@ const STATUS_ENROUTE = 'Enroute';
 $allowedStatuses = [STATUS_OPEN, STATUS_CLOSED, STATUS_ON_SCENE, STATUS_ENROUTE];
 
 $versionUrl = 'https://raw.githubusercontent.com/StoicCAD/CAD/main/version.txt'; // Use the raw content URL
-$currentVersion = '1.2.6';
+$currentVersion = '1.3.0';
 
 function getLatestVersion($url) {
     $version = @file_get_contents($url);
