@@ -1,40 +1,40 @@
 <?php
-ini_set('display_errors', 1);
-error_reporting(E_ALL);
 
 require_once '../config/db.php'; // Ensure this file contains your PDO connection logic
 
-
-// Create database connection
-$conn = new mysqli($servername, $username, $password, $dbname);
-
-// Check connection
-if ($conn->connect_error) {
-    die("Connection failed: " . $conn->connect_error);
+// Only allow access if the user is an admin
+if (!isset($_SESSION['user_id'])) {
+    header("Location: ../login.php");
+    exit();
 }
 
-// Prepare an INSERT statement
-$sql = "INSERT INTO incidents (title, description, reported_by, status) VALUES (?, ?, ?, 'Open')";
-$stmt = $conn->prepare($sql);
-if ($stmt === false) {
-    die('MySQL prepare error: ' . $conn->error);
+// Get the incident ID from the query string
+$incidentId = $_GET['incident_id'] ?? null;
+if (!$incidentId) {
+    die("Incident ID not specified.");
 }
 
-// Bind parameters
-$title = $_POST['title'];
-$description = $_POST['description'];
-$reported_by = $_POST['reported_by']; // Assumed to be set correctly elsewhere; consider security implications
+// Prepare and execute the statement to fetch incident data
+$stmt = $conn->prepare("SELECT * FROM incidents WHERE id = ?");
+$stmt->bindParam(1, $incidentId);
+$stmt->execute();
+$incident = $stmt->fetch(PDO::FETCH_ASSOC);
 
-$stmt->bind_param("ssi", $title, $description, $reported_by);
-
-// Execute the statement
-if (!$stmt->execute()) {
-    die('Execute error: ' . $stmt->error);
-} else {
-    echo "New incident reported successfully with status 'Open'";
+if (!$incident) {
+    die("Incident not found.");
 }
 
-// Close statement and connection
-$stmt->close();
-$conn->close();
+// Setup data for the template
+$currentData = $incident;
+$fields = [
+    'title' => $incident['title'],
+    'description' => $incident['description'],
+    'reported_by' => $incident['reported_by'],
+    'status' => $incident['status']
+];
+$type = 'Incident';
+
+// Include the generic edit template
+include 'edit_template.php';
+
 ?>
