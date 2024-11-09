@@ -1,7 +1,6 @@
 <?php
-session_start();
-require_once '../config/db.php'; // Ensure this file contains your PDO connection logic
 
+require_once '../config/db.php'; // Ensure this file contains your PDO connection logic
 
 if (!isset($_GET['ticket_id']) || !is_numeric($_GET['ticket_id'])) {
     echo "Invalid ticket ID.";
@@ -20,9 +19,13 @@ if (!$currentData) {
 }
 
 $type = 'ticket';
+
+// Convert issue_date to DateTime object
+$issue_date = new DateTime($currentData['issue_date']); // Convert string to DateTime
+
 $fields = [
     'issued_by' => $currentData['issued_by'],
-    'issue_date' => $currentData['issue_date']->format('Y-m-d H:i:s'),
+    'issue_date' => $issue_date->format('Y-m-d H:i:s'), // Use format after converting to DateTime
     'violation' => $currentData['violation'],
     'fine_amount' => $currentData['fine_amount']
 ];
