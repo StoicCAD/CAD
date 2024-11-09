@@ -29,25 +29,148 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $action = $_POST['action'];
         switch ($action) {
             case 'delete_user':
-                $stmt = $conn->prepare("DELETE FROM users WHERE id = ?");
-                $stmt->execute([$_POST['user_id']]);
+                $user_id = $_POST['user_id'];
+
+                // Start transaction
+                $conn->beginTransaction();
+
+                try {
+                    // Delete the user from the 'users' table
+                    $stmt = $conn->prepare("DELETE FROM users WHERE id = :user_id");
+                    $stmt->bindParam(':user_id', $user_id);
+                    $stmt->execute();
+
+                    // Commit the transaction
+                    $conn->commit();
+
+                    // Redirect to the admin dashboard after deletion
+                    header('Location: admin-dash.php');
+                    exit();
+                } catch (Exception $e) {
+                    // Rollback the transaction if an error occurs
+                    $conn->rollBack();
+                    echo "Error: " . $e->getMessage();
+                }
                 break;
-            case 'edit_user':
-                header("Location: edits/edit_user.php?user_id=" . $_POST['user_id']);
+            case 'delete_incident':
+                $incident_id = $_POST['incident_id'];
+
+                // Start transaction
+                $conn->beginTransaction();
+
+                try {
+                    // Delete the incident from the 'incidents' table
+                    $stmt = $conn->prepare("DELETE FROM incidents WHERE id = :incident_id");
+                    $stmt->bindParam(':incident_id', $incident_id);
+                    $stmt->execute();
+
+                    // Commit the transaction
+                    $conn->commit();
+
+                    // Redirect to the admin dashboard after deletion
+                    header('Location: admin-dash.php');
+                    exit();
+                } catch (Exception $e) {
+                    // Rollback the transaction if an error occurs
+                    $conn->rollBack();
+                    echo "Error: " . $e->getMessage();
+                }
                 break;
-            case 'edit_incident':
-                header("Location: edits/edit_incident.php?incident_id=" . $_POST['incident_id']);
+
+            case 'delete_report':
+                $report_id = $_POST['report_id'];
+
+                // Start transaction
+                $conn->beginTransaction();
+
+                try {
+                    // Delete the report from the 'reports' table
+                    $stmt = $conn->prepare("DELETE FROM reports WHERE report_id = :report_id");
+                    $stmt->bindParam(':report_id', $report_id);
+                    $stmt->execute();
+
+                    // Commit the transaction
+                    $conn->commit();
+
+                    // Redirect to the admin dashboard after deletion
+                    header('Location: admin-dash.php');
+                    exit();
+                } catch (Exception $e) {
+                    // Rollback the transaction if an error occurs
+                    $conn->rollBack();
+                    echo "Error: " . $e->getMessage();
+                }
                 break;
-            case 'edit_report':
-                header("Location: edits/edit_report.php?report_id=" . $_POST['report_id']);
+
+            case 'delete_ticket':
+                $ticket_id = $_POST['ticket_id'];
+
+                // Start transaction
+                $conn->beginTransaction();
+
+                try {
+                    // Delete the ticket from the 'tickets' table
+                    $stmt = $conn->prepare("DELETE FROM tickets WHERE ticket_id = :ticket_id");
+                    $stmt->bindParam(':ticket_id', $ticket_id);
+                    $stmt->execute();
+
+                    // Commit the transaction
+                    $conn->commit();
+
+                    // Redirect to the admin dashboard after deletion
+                    header('Location: admin-dash.php');
+                    exit();
+                } catch (Exception $e) {
+                    // Rollback the transaction if an error occurs
+                    $conn->rollBack();
+                    echo "Error: " . $e->getMessage();
+                }
                 break;
-            case 'edit_ticket':
-                header("Location: edits/edit_ticket.php?ticket_id=" . $_POST['ticket_id']);
+
+            case 'delete_arrest':
+                $arrest_id = $_POST['arrest_id'];
+
+                // Start transaction
+                $conn->beginTransaction();
+
+                try {
+                    // Delete the arrest from the 'arrests' table
+                    $stmt = $conn->prepare("DELETE FROM arrests WHERE arrest_id = :arrest_id");
+                    $stmt->bindParam(':arrest_id', $arrest_id);
+                    $stmt->execute();
+
+                    // Commit the transaction
+                    $conn->commit();
+
+                    // Redirect to the admin dashboard after deletion
+                    header('Location: admin-dash.php');
+                    exit();
+                } catch (Exception $e) {
+                    // Rollback the transaction if an error occurs
+                    $conn->rollBack();
+                    echo "Error: " . $e->getMessage();
+                }
                 break;
-            case 'edit_arrest':
-                header("Location: edits/edit_arrest.php?arrest_id=" . $_POST['arrest_id']);
-                break;
-        }
+                case 'edit_user':
+                    header("Location: edits/edit_user.php?user_id=" . $_POST['user_id']);
+                    break;
+    
+                case 'edit_incident':
+                    header("Location: edits/edit_incident.php?incident_id=" . $_POST['incident_id']);
+                    break;
+    
+                case 'edit_report':
+                    header("Location: edits/edit_report.php?report_id=" . $_POST['report_id']);
+                    break;
+    
+                case 'edit_ticket':
+                    header("Location: edits/edit_ticket.php?ticket_id=" . $_POST['ticket_id']);
+                    break;
+    
+                case 'edit_arrest':
+                    header("Location: edits/edit_arrest.php?arrest_id=" . $_POST['arrest_id']);
+                    break;
+            }
         exit();
     }
 }
