@@ -15,19 +15,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $samesite = 'none';
     $lifetime = 600;
 
-    // Set session cookie parameters based on PHP version
-    if (PHP_VERSION_ID < 70300) {
-        session_set_cookie_params($lifetime, '/; samesite=' . $samesite, $_SERVER['HTTP_HOST'], $secure, $httponly);
-    } else {
-        session_set_cookie_params([
-            'lifetime' => $lifetime,
-            'path' => '/',
-            'domain' => $_SERVER['HTTP_HOST'],
-            'secure' => $secure,
-            'httponly' => $httponly,
-            'samesite' => $samesite
-        ]);
-    }
 
     // Get the input data from the form
     $title = $_POST['title'] ?? '';
