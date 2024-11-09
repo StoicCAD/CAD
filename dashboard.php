@@ -1,4 +1,5 @@
 <?php
+
 require_once 'config/db.php';
 
 // Check if user is logged in
@@ -34,8 +35,8 @@ const STATUS_ENROUTE = 'Enroute';
 
 $allowedStatuses = [STATUS_OPEN, STATUS_CLOSED, STATUS_ON_SCENE, STATUS_ENROUTE];
 
-$versionUrl = 'https://raw.githubusercontent.com/StoicCAD/CAD/version.txt'; // Use the raw content URL
-$currentVersion = '1.2.7';
+$versionUrl = 'https://raw.githubusercontent.com/StoicCAD/CAD/main/version.txt'; // Use the raw content URL
+$currentVersion = '1.2.6';
 
 function getLatestVersion($url) {
     $version = @file_get_contents($url);
@@ -221,17 +222,17 @@ $incidents = $incidents_stmt->fetchAll(PDO::FETCH_ASSOC);
                     <div class="flex flex-row gap-3 items-center mt-2">
                       <form method="post" class="">
                         <input type="hidden" name="incident_id" value="<?php echo $incident['id']; ?>">
-                        <button type="submit" name="attach_self" class="px-3 py-1.5 bg-green-500 rounded hover:bg-green-700">Attach Self</button>
+                        <button type="submit" name="attach_self" class="px-3 py-1 bg-green-500 rounded hover:bg-green-700">Attach Self</button>
                       </form>
                       <form method="post" class="">
                           <input type="hidden" name="incident_id" value="<?php echo $incident['id']; ?>">
-                          <select name="status" class="bg-gray-700 text-white p-2 rounded h-full">
+                          <select name="status" class="bg-gray-700 text-white p-1 rounded h-full">
                               <option value="Open" <?php echo $incident['status'] === "Open" ? "selected" : ""; ?>>Open</option>
                               <option value="Closed" <?php echo $incident['status'] === "Closed" ? "selected" : ""; ?>>Closed</option>
                               <option value="On Scene" <?php echo $incident['status'] === "On Scene" ? "selected" : ""; ?>>On Scene</option>
                               <option value="Enroute" <?php echo $incident['status'] === "Enroute" ? "selected" : ""; ?>>Enroute</option>
                           </select>
-                          <button type="submit" name="update_incident_status" class="ml-2 px-3 py-1.5 bg-blue-500 rounded hover:bg-blue-700">Update Status</button>
+                          <button type="submit" name="update_incident_status" class="ml-2 px-3 py-1 bg-blue-500 rounded hover:bg-blue-700">Update Status</button>
                       </form>
                     </div>
                 </div>
@@ -247,19 +248,17 @@ $incidents = $incidents_stmt->fetchAll(PDO::FETCH_ASSOC);
                     <div id="reports">
                       <?php foreach ($reports as $report): ?>
                           <div class="bg-gray-800 p-4 rounded mb-2">
-                              <div class="flex flex-col gap">
-                                <p><strong>Title:</strong> <?php echo htmlspecialchars($report['report_title'] ?? 'Untitled Report'); ?></p>
-                                <p><strong>Content:</strong> <?php echo htmlspecialchars($report['report_content'] ?? 'No content available.'); ?></p>
-                                <p><em><strong>Status:</strong> <?php echo htmlspecialchars($report['status'] ?? 'Unknown'); ?></em></p>
-                              </div>
-                              <form method="post" class="mt-2">
+                              <p><strong><?php echo htmlspecialchars($report['report_title'] ?? 'Untitled Report'); ?></strong></p>
+                              <p><?php echo htmlspecialchars($report['report_content'] ?? 'No content available.'); ?></p>
+                              <p><em>Status: <?php echo htmlspecialchars($report['status'] ?? 'Unknown'); ?></em></p>
+                              <form method="post" class="inline">
                                   <input type="hidden" name="report_id" value="<?php echo $report['report_id']; ?>">
                                   <select name="status" class="bg-gray-700 text-white p-2 rounded">
                                       <option value="Pending" <?php echo ($report['status'] ?? '') === "Pending" ? "selected" : ""; ?>>Pending</option>
                                       <option value="Reviewed" <?php echo ($report['status'] ?? '') === "Reviewed" ? "selected" : ""; ?>>Reviewed</option>
                                       <option value="Closed" <?php echo ($report['status'] ?? '') === "Closed" ? "selected" : ""; ?>>Closed</option>
                                   </select>
-                                  <button type="submit" name="update_report_status" class="ml-2 px-3 py-1.5 bg-blue-500 rounded hover:bg-blue-700">Update Status</button>
+                                  <button type="submit" name="update_report_status" class="ml-2 px-3 py-1 bg-blue-500 rounded hover:bg-blue-700">Update Status</button>
                               </form>
                           </div>
                       <?php endforeach; ?>
